@@ -1,0 +1,28 @@
+## Interface: 16001
+## Title: CueTheCashier - Auctioning
+## Notes: CueTheCashier's auction house module: full scan, the Craft Trade window (Buy, Sell, Auctions, Post, Vendor, Snipe, Disenchant, Shopping) and buying. Loaded when the auction house opens.
+## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
+## Author: Kim
+## Version: 0.44.0
+## X-License: GPL-3.0-or-later
+## Dependencies: CueTheCashier
+## LoadOnDemand: 1
+## X-CueTheCashier-LoadOn: AUCTION_HOUSE_SHOW
+## X-CueTheCashier-Commands: fullscan, test, button
+
+Module.lua
+Scanner.lua
+DebugScan.lua
+AuctionUI.lua
+Categories.lua
+CraftTradeUI.lua
+ItemPage.lua
+BuyTab.lua
+SellTab.lua
+AuctionsTab.lua
+PostTab.lua
+DealPage.lua
+VendorTab.lua
+SnipeTab.lua
+DisenchantTab.lua
+ShoppingTab.lua

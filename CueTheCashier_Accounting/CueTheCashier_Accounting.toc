@@ -1,0 +1,16 @@
+## Interface: 16001
+## Title: CueTheCashier - Accounting
+## Notes: CueTheCashier's ledger: what you buy and sell on the auction house and at vendors, and your profit. Loaded when needed.
+## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
+## Author: Kim
+## Version: 0.44.0
+## X-License: GPL-3.0-or-later
+## Dependencies: CueTheCashier
+## LoadOnDemand: 1
+## SavedVariables: CueTheCashierAccountingDB, CraftMarketAccountingDB
+## X-CueTheCashier-LoadOn: MAIL_SHOW, MERCHANT_SHOW, AUCTION_HOUSE_SHOW, CM_MINIMAP_TOOLTIP, CM_MAIN_WINDOW_SHOW, TRADE_SHOW
+## X-CueTheCashier-Commands: ledger
+
+Module.lua
+Ledger.lua
+LedgerUI.lua

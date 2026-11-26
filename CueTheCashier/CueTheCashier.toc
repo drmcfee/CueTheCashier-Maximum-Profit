@@ -1,0 +1,42 @@
+## Interface: 16001
+## Title: CueTheCashier: Maximum Profit
+## Notes: Core of the CueTheCashier suite: auction prices, price sources, saved data and the public API. Features come in the CueTheCashier_* module folders.
+## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
+## Author: Kim
+## Version: 0.44.0
+## X-License: GPL-3.0-or-later
+## SavedVariables: CueTheCashierDB, CraftMarketDB
+
+Templates.xml
+Events.lua
+Core.lua
+DebugLog.lua
+Modules.lua
+Skins.lua
+SkinDark.lua
+Widgets.lua
+Placement.lua
+Data.lua
+VendorPrices.lua
+MerchantCheck.lua
+Disenchant.lua
+API.lua
+Profiles.lua
+AuctionFees.lua
+Formulas.lua
+Groups.lua
+Operations.lua
+VendorSell.lua
+Mailing.lua
+MailTo.lua
+BankMoves.lua
+OneKey.lua
+Tooltip.lua
+MainWindow.lua
+MainTabs.lua
+GoldTab.lua
+GroupsTab.lua
+OperationsTab.lua
+PricesTab.lua
+MinimapButton.lua
+Commands.lua

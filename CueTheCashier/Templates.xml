@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+<!-- Copyright (C) 2026 Kim. Licensed under the GNU GPL v3 or later; see LICENSE. -->
+  <!-- One row in a CueTheCashier result list. The row's contents (icon,
+       texts) are made in Lua the first time the row is used. -->
+  <Button name="CueTheCashierResultRowTemplate" virtual="true">
+    <Size y="20"/>
+  </Button>
+</Ui>
