@@ -4,7 +4,7 @@ One list per module. Run a module's list when it is new or changed, tick each li
 anything odd together with the debug log: `/cmp debug` first, then `/cmp log`, Pause, Select All,
 Ctrl+C. Chat can't be copied, the log can.
 
-Before every list: install all six folders, log in, `/cmp status` shows version 0.46.0 and every
+Before every list: install all six folders, log in, `/cmp status` shows version 0.46.1 and every
 module, and there is no Lua error box.
 
 ## One Task List, crafters, recipes, flips (0.46.0)
@@ -37,7 +37,10 @@ AH cheaper and vendor flip
 - [ ] Settings > Crafting > "Vendor flip: markup %" at 0: the section is gone.
 
 Vendor it after too many reposts
-- [ ] Post a cheap item a few times and let it expire, open the mailbox, then Post scan: "Vendor it: N failed posts ...".
+- [ ] 0.46.1: post a cheap item, let it expire, open the mailbox, post the same ones again... After enough
+      fails the Post scan says "Vendor it: N failed ..." for just those units and still posts the others.
+- [ ] Craft fresh ones of an item that has "Vendor it" units: the fresh ones are posted, not counted as failed.
+- [ ] Some of a post sell, some expire: only the expired ones gain a failed try.
 - [ ] With Sell to vendors on in its Vendoring operation, the merchant's Sell to Vendor button sells it.
 - [ ] Vendoring operation "Vendor after failed posts" = 2: says Vendor it after 2 expired auctions in a row.
 

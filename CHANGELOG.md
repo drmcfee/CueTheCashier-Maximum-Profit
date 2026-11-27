@@ -3,6 +3,16 @@
 All notable changes to CueTheCashier: Maximum Profit. Newest first.
 Versions below 1.0 are beta: saved data is kept between versions, but settings and commands can still change.
 
+## 0.46.1
+
+- Fix (Kim): "Vendor it" counted every expired auction since the last sale for the whole item, so freshly
+  crafted Kaldorei Spider Kabobs got "3 failed posts, vendor it" although some had sold. Now every post is
+  tracked as a lot: when it went up, how many came back expired and how many sold. Units that come back carry
+  their failed tries with them; fresh crafts start at 0 and sales never count as fails. "Vendor it" names only
+  the units that failed that often, and the Post scan still posts the rest ("12 posted (6 to vendor)").
+- Counting starts with your first post on 0.46.1, so nothing old is held against your items.
+- Saved data: new table `CueTheCashierDB.lots` (per server and faction). API minor 15.
+
 ## 0.46.0
 
 - **One list: the Crafting List window is gone.** Its crafts are the Task List's "Profession crafts", and the

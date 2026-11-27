@@ -292,6 +292,7 @@ function Ledger:ScanMail()
         local id = API.FindItemID(itemName)
         if invoiceType == "seller" then
           self:AddSold(id, itemName, count, bid - (consignment or 0), "AH")
+          if API.LotSold then CM.Try("Lot sold", API.LotSold, id, count) end -- 0.46.1
           if consignment and consignment > 0 then
             self:AddOther("AH cut", -consignment, ("%d x %s"):format(count, itemName))
           end
@@ -322,6 +323,8 @@ function Ledger:ScanMail()
             note = ("%d x %s (deposit, estimate)"):format(n, name) }
           -- Listed even when the deposit is unknown (0), so you see it expired.
           Add(d.other, line)
+          -- 0.46.1: those units are back, one more failed try when expired.
+          if API.LotReturned and itemID then CM.Try("Lot returned", API.LotReturned, itemID, n, kind == "expired") end
         end
       end
     end

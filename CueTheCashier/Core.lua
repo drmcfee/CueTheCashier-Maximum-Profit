@@ -12,7 +12,7 @@ local ADDON_NAME, CM = ...
 _G.CueTheCashier = CM
 
 CM.ADDON_NAME = ADDON_NAME
-CM.version = "0.46.0"
+CM.version = "0.46.1"
 CM.NAME = "CueTheCashier: Maximum Profit"
 -- Icons (TGA, power of two). Folder names stay CueTheCashier* so saved data keeps working.
 CM.ICON = "Interface\\AddOns\\CueTheCashier\\Media\\icon128"

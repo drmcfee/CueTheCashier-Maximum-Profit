@@ -1109,32 +1109,39 @@ M.RunTimers(1)
 slash(lua, "tovendor")
 print("late merchant window: button", lua.eval("CueTheCashierVendorSellButton:IsShown()"), lua.eval("CueTheCashierVendorSellButton:GetText()"))
 check(lua, "sell to vendor")
-# 0.46.0: vendor it after too many reposts
+# 0.46.1: vendor it per unit (posted lots)
 lua.execute("""
-  local API = CueTheCashier.API
-  local key = CueTheCashier:GetAuctionKey()
-  CueTheCashierDB.sales = CueTheCashierDB.sales or {}
-  CueTheCashierDB.sales[key] = { t = time(), days = 30, items = { [2318] = { 0, 2, 0, 0, 0, 4, 2 }, [10940] = { 1, 3, 1, 1, 400, 6, 3 } } }
-  local v, why = API.GetRepostAdvice(2318)   -- cheap: market 6, vendor 10 -> AH earns nothing over a vendor
-  _V1 = tostring(v) .. ' / ' .. tostring(why)
-  v, why = API.GetRepostAdvice(10940)        -- worth 500, deposits 1c a post: keep posting
-  _V2 = tostring(v) .. ' / ' .. tostring(why)
+  local API, Lots = CueTheCashier.API, CueTheCashier.Lots
+  local bags = { [10940] = 20, [2318] = 10 }
+  C_Item.GetItemCount = function(id) return bags[id] or 0 end
+  -- 2318: market 6, vendor 10: AH earns nothing over a vendor -> 1 failed try is enough
+  Lots.Posted(2318, 5); bags[2318] = 5
+  Lots.Returned(2318, 5, true); bags[2318] = 10
+  local v, why, n = API.GetRepostAdvice(2318)
+  _V1 = tostring(v) .. ' / ' .. tostring(n) .. ' / ' .. tostring(why)
+  -- 10940 (worth 500): Kim's case: 20 made, 10 posted, 4 sold, 6 back expired, 3 times over
   API.CreateOperation('vendor', 'Repost')
   API.SetOperationValue('vendor', 'Repost', 'repostLimit', 3)
   local rg = API.CreateGroup('Repost')
   API.AddItemToGroup(rg, 10940)
   API.SetGroupOperation(rg, 'vendor', 'Repost')
-  _OK = 'op ' .. tostring(CueTheCashier.Operations.ForItem(10940, 'vendor'))
-  v, why = API.GetRepostAdvice(10940)        -- override: 3 failed posts
-  _V3 = tostring(v) .. ' / ' .. tostring(why)
-  local p = API.GetVendorSellPlan(true)
-  _V4 = '' for _, x in ipairs(p) do if x.itemID == 10940 then _V4 = x.itemID .. 'x' .. x.count .. ' ' .. x.why end end
+  for round = 1, 3 do
+    Lots.Posted(10940, 10); bags[10940] = bags[10940] - 10
+    if round == 1 then Lots.Sold(10940, 4); Lots.Returned(10940, 6, true); bags[10940] = bags[10940] + 6
+    else Lots.Returned(10940, 10, true); bags[10940] = bags[10940] + 10 end
+  end
+  v, why, n = API.GetRepostAdvice(10940)
+  _V2 = tostring(v) .. ' / ' .. tostring(n) .. ' / ' .. tostring(why) .. ' / bags ' .. bags[10940]
+  -- fresh crafts don't inherit: 10 new ones
+  bags[10940] = bags[10940] + 10
+  v, why, n = API.GetRepostAdvice(10940)
+  _V3 = tostring(v) .. ' / ' .. tostring(n)
   API.SetGroupOperation(rg, 'vendor', false)
-  CueTheCashierDB.sales[key] = nil
+  CueTheCashierDB.lots = nil
 """)
-print("0.46 vendor it, cheap item (want true):", lua.eval("_V1"))
-print("0.46 vendor it, pricey item (want false):", lua.eval("_V2"))
-print("0.46 vendor it, limit 3 (want true):", lua.eval("_V3"), lua.eval("_OK"), "| sell plan:", lua.eval("_V4"))
+print("0.46.1 cheap item, 5 back after 1 fail (want true / 5):", lua.eval("_V1"))
+print("0.46.1 limit 3 (want true / 6: the 6 that failed 3 times):", lua.eval("_V2"))
+print("0.46.1 plus 10 fresh crafts (want true / 6):", lua.eval("_V3"))
 check(lua, "0.46 vendor it")
 # ---------- Scenario 10: profiles and mailing (0.31.0) ----------
 lua, M = new_runtime(legacy="""

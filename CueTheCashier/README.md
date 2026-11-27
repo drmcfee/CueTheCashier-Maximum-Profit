@@ -1,4 +1,4 @@
-# CueTheCashier: Maximum Profit 0.46.0 (auction house scanner and craft profit)
+# CueTheCashier: Maximum Profit 0.46.1 (auction house scanner and craft profit)
 
 The addon was called CraftMarket until 0.38.0. 0.40.0 renamed the folders and 0.41.0 everything inside
 (saved variables `CueTheCashierDB` and friends, the `CueTheCashier` Lua table, frame names). Data saved

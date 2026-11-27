@@ -114,10 +114,18 @@ local function DecidePost(r)
   -- 0.46.0 (Kim): expired so often that the deposits lost have eaten what
   -- the auction house earns over a vendor: sell it to a vendor instead.
   if API.GetRepostAdvice then
-    local vendorIt, why = API.GetRepostAdvice(r.itemID)
+    -- 0.46.1: only the units that failed that often; the rest still post.
+    local vendorIt, why, tired = API.GetRepostAdvice(r.itemID)
     if vendorIt then
-      r.action, r.note = "skip", "Vendor it: " .. tostring(why)
-      return
+      tired = tonumber(tired) or r.count
+      if tired >= r.count then
+        r.action, r.note = "skip", "Vendor it: " .. tostring(why)
+        return
+      end
+      r.tired = tired
+      r.tiredNote = ("%d to vendor"):format(tired)
+    else
+      r.tired, r.tiredNote = nil, nil
     end
   end
   local minP, normal, maxP = OpPrice(r, "minPrice"), OpPrice(r, "normalPrice"), OpPrice(r, "maxPrice")
@@ -145,7 +153,7 @@ local function DecidePost(r)
     end
   end
   local room = (s.postCap or 0) - (state.owned[r.itemID] or 0)
-  local spare = r.count - (s.keep or 0)
+  local spare = r.count - (r.tired or 0) - (s.keep or 0)
   local qty = math.min(room, spare)
   if qty <= 0 then
     r.action = "skip"
@@ -153,6 +161,7 @@ local function DecidePost(r)
     return
   end
   r.qty, r.price, r.action, r.note = qty, math.max(1, math.floor(price)), "post", why
+  if r.tiredNote then r.note = r.note .. " (" .. r.tiredNote .. ")" end
 end
 
 local function DecideCancel(r)

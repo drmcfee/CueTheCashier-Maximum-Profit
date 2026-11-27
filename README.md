@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <b>Public beta</b> · version 0.46.0 · GPL-3.0 · <code>/cmp</code>
+  <b>Public beta</b> · version 0.46.1 · GPL-3.0 · <code>/cmp</code>
 </p>
 
 ---
