@@ -162,7 +162,7 @@ function D.Build()
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", f.StartMoving)
   f:SetScript("OnDragStop", f.StopMovingOrSizing)
-  f:SetFrameStrata("DIALOG")
+  if CM.Raisable then CM.Raisable(f) else f:SetFrameStrata("DIALOG") end -- front when clicked
   f:Hide()
   f:SetClampedToScreen(true)
   CM.CloseOnEscape(f)

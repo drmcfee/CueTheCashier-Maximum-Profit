@@ -86,20 +86,76 @@ end
 -- ===================================================================
 
 -- Hides Blizzard's AH window without ending the auction house session.
+local OFF_X, OFF_Y = -10000, 10000
+
+local function PutOffScreen(f)
+  f:SetAlpha(0)
+  f:ClearAllPoints()
+  f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", OFF_X, OFF_Y)
+end
+
 local function HideBlizzard()
   local f = AuctionHouseFrame
   if savedPoints then return end
   savedPoints = {}
   for i = 1, f:GetNumPoints() do savedPoints[i] = { f:GetPoint(i) } end
-  f:SetAlpha(0)
-  f:ClearAllPoints()
-  -- GUESS: far off screen, like TSM. If Blizzard's window pops back into
-  -- view (for example when another panel opens), tell Claude.
-  f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", -10000, 10000)
+  -- Far off screen, like TSM.
+  PutOffScreen(f)
   CM.Debug("Craft Trade: Blizzard AH window hidden off screen.")
 end
 
+-- Keeping it hidden (0.45.0). Seen in game (0.44.0): accepting a party
+-- invite made Blizzard's AH window pop back over ours, and it stayed after
+-- the party ended. The game re-places its open windows at times like that
+-- (UpdateUIPanelPositions), which moves Blizzard's window back on screen.
+-- So while Craft Trade is shown we check again: after the game re-places
+-- windows, on group and screen changes, and twice a second as a safety
+-- net. An invisible window on screen would also catch clicks meant for ours.
+local keepTicker
+
+local function KeepHidden(why)
+  local f = AuctionHouseFrame
+  if not (CraftTrade.showingOurs and savedPoints and f and f:IsShown()) then return end
+  local left, top = f:GetLeft(), f:GetTop()
+  local offScreen = left and top and left < OFF_X / 2
+  if offScreen and f:GetAlpha() == 0 then return end
+  PutOffScreen(f)
+  if window and window:IsShown() and window.Raise then window:Raise() end
+  CM.Debug(("Craft Trade: Blizzard AH window came back (%s), hidden again."):format(why or "check"))
+end
+CraftTrade.KeepHidden = KeepHidden
+
+local hooked = false
+local function WatchBlizzard()
+  if not hooked then
+    hooked = true
+    if type(UpdateUIPanelPositions) == "function" then
+      hooksecurefunc("UpdateUIPanelPositions", function()
+        if CraftTrade.showingOurs then C_Timer.After(0, function() KeepHidden("windows re-placed") end) end
+      end)
+    end
+    local ev = CreateFrame("Frame")
+    for _, e in ipairs({ "GROUP_ROSTER_UPDATE", "PARTY_INVITE_REQUEST", "GROUP_JOINED", "GROUP_LEFT",
+      "UI_SCALE_CHANGED", "DISPLAY_SIZE_CHANGED" }) do
+      pcall(ev.RegisterEvent, ev, e)
+    end
+    ev:SetScript("OnEvent", function(_, e)
+      if not CraftTrade.showingOurs then return end
+      KeepHidden(e)
+      C_Timer.After(0.2, function() KeepHidden(e) end)
+    end)
+  end
+  if not keepTicker and C_Timer.NewTicker then
+    keepTicker = C_Timer.NewTicker(0.5, function() KeepHidden() end)
+  end
+end
+
+local function StopWatching()
+  if keepTicker then keepTicker:Cancel(); keepTicker = nil end
+end
+
 local function RestoreBlizzard()
+  StopWatching()
   local f = AuctionHouseFrame
   if not (f and savedPoints) then return end
   f:ClearAllPoints()
@@ -117,6 +173,8 @@ local function BuildWindow()
   f:SetSize(AuctionHouseFrame:GetWidth(), AuctionHouseFrame:GetHeight())
   f:SetFrameStrata(AuctionHouseFrame:GetFrameStrata())
   f:SetToplevel(true)
+  -- Comes to the front when clicked, over the Task List and our other windows (0.45.0).
+  f:HookScript("OnMouseDown", function(self) self:Raise() end)
   f:EnableMouse(true)
   f:SetMovable(true)
   f:SetClampedToScreen(true)
@@ -242,6 +300,7 @@ function CraftTrade:ShowOurs()
   window:Show()
   self:SelectTab(window.selectedTab or 1)
   self.showingOurs = true
+  WatchBlizzard()
 end
 
 function CraftTrade:ShowBlizzard()

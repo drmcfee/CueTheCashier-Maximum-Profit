@@ -3,7 +3,7 @@
 ## Notes: CueTheCashier's profession module: finds your professions, reads their recipes and shows craft cost and profit in Blizzard's profession window.
 ## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
 ## Author: Kim
-## Version: 0.44.0
+## Version: 0.45.0
 ## X-License: GPL-3.0-or-later
 ## Dependencies: CueTheCashier
 ## SavedVariables: CueTheCashierCraftingDB, CraftMarketCraftingDB
@@ -19,7 +19,7 @@ ProfessionsUI.lua
 ListWindow.lua
 CraftList.lua
 GroupPicker.lua
-ShoppingList.lua
+TaskList.lua
 Vendors.lua
 Merchant.lua
 InventoryTab.lua

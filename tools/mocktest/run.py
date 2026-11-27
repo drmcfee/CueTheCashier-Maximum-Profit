@@ -452,9 +452,9 @@ lua.execute("""
   for _, r in ipairs(f.rows) do if r:IsShown() then _OUT[#_OUT+1] = r.left:GetText() .. ' | ' .. r.right:GetText() end end
 """)
 print("restock list:\n  " + "\n  ".join(lua.eval("table.concat(_OUT, '\\n')").split("\n")))
-slash(lua, "prof list open"); slash(lua, "prof shop")
+slash(lua, "prof list open"); slash(lua, "prof tasks")
 lua.execute("""
-  local f = CueTheCashierShoppingListFrame; _OUT = {}
+  local f = CueTheCashierTaskListFrame; _OUT = {}
   for _, r in ipairs(f.rows) do if r:IsShown() then _OUT[#_OUT+1] = r.left:GetText() .. ' | ' .. r.right:GetText() end end
   _OUT[#_OUT+1] = f.totals:GetText()
   local row; for _, r in ipairs(f.rows) do if r:IsShown() and r.line and r.line.itemID == 783 then row = r end end
@@ -532,7 +532,7 @@ lua.execute("MerchantFrame:Hide(); AuctionHouseFrame:Show(); _MOCK.popups = {}")
 lua.execute("""
   local tab = _MOCK.addons.CueTheCashier_Auctioning.ns.ShoppingTab
   tab.state.rows = {}; tab.state.finishedAt = nil; tab.state.buying = false
-  local row; for _, r in ipairs(CueTheCashierShoppingListFrame.rows) do if r:IsShown() and r.line and r.line.itemID == 2318 and r.line.onClick then row = r end end
+  local row; for _, r in ipairs(CueTheCashierTaskListFrame.rows) do if r:IsShown() and r.line and r.line.itemID == 2318 and r.line.onClick then row = r end end
   row.__scripts.OnClick(row, 'LeftButton')
 """)
 M.RunTimers(3)
@@ -543,18 +543,18 @@ check(lua, "reagent click buys")
 # A CueTheCashier AH buy counts as in the mailbox until the mailbox is opened
 lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.Inventory.Bought(2318, 5)")
 print("leather where after buy:", lua.eval("(function() local w = _MOCK.addons.CueTheCashier_Crafting.ns.Inventory.Where(2318) return 'mail ' .. w.mail .. ' total ' .. w.total end)()"))
-lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.ShoppingList.Hide(); AuctionHouseFrame:Hide()")
+lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.TaskList.Hide(); AuctionHouseFrame:Hide()")
 M.FireEvent("AUCTION_HOUSE_CLOSED"); M.FireEvent("MAIL_SHOW"); M.RunTimers(2)
-print("shopping list auto-open at mailbox:", lua.eval("CueTheCashierShoppingListFrame:IsShown()"))
+print("shopping list auto-open at mailbox:", lua.eval("CueTheCashierTaskListFrame:IsShown()"))
 M.FireEvent("MAIL_CLOSED")
-print("still open after mailbox closed:", lua.eval("CueTheCashierShoppingListFrame:IsShown()"))
+print("still open after mailbox closed:", lua.eval("CueTheCashierTaskListFrame:IsShown()"))
 lua.execute("function ToggleGameMenu() _MENU = true end")
 M.FireEvent("ADDON_LOADED", "Blizzard_GameMenuEsc")
 lua.execute("ToggleGameMenu()")
 print("escape opens game menu:", lua.eval("_MENU"))
-print("escape closes it:", lua.eval("not CueTheCashierShoppingListFrame:IsShown()"))
-lua.execute("CueTheCashierShoppingListFrame:Hide(); CueTheCashierMinimapButton.__scripts.OnClick(CueTheCashierMinimapButton, 'RightButton')")
-print("minimap right-click opens it:", lua.eval("CueTheCashierShoppingListFrame:IsShown()"))
+print("escape closes it:", lua.eval("not CueTheCashierTaskListFrame:IsShown()"))
+lua.execute("CueTheCashierTaskListFrame:Hide(); CueTheCashierMinimapButton.__scripts.OnClick(CueTheCashierMinimapButton, 'RightButton')")
+print("minimap right-click opens it:", lua.eval("CueTheCashierTaskListFrame:IsShown()"))
 print("not in UISpecialFrames:", lua.eval("(function() for _, n in ipairs(UISpecialFrames) do if n:find('List') or n:find('CraftTrade') then return false end end return true end)()"))
 M.FireEvent("TRADE_SKILL_CLOSE")
 print("craft list hidden with prof window:", lua.eval("not CueTheCashierCraftListFrame:IsShown()"))
@@ -587,10 +587,36 @@ lua.execute("""
 """)
 print("titles with cooking:", lua.eval("table.concat(_OUT, ', ')"), "| cooking title opens:", lua.eval("_OPENED"))
 print("openers after clean:", lua.eval("table.concat(_OP, ' ')"))
+# 0.45.0 Task List: Profession crafts section
+lua.execute("""
+  local ns = _MOCK.addons.CueTheCashier_Crafting.ns
+  _MOCK.counts[2672] = 0; _OPENED = nil; _CRAFTED = nil
+  ns.TaskList.Show()
+  local function Row()
+    for _, r in ipairs(CueTheCashierTaskListFrame.rows) do
+      if r:IsShown() and r.line and r.line.left and r.line.left:find('Spiced Wolf Meat') then return r end
+    end
+  end
+  _HDR = CueTheCashierTaskListFrame.rows[1].line.header
+  local r = Row(); _R1 = r and r.line.right or 'no row'
+  if r then r.__scripts.OnClick(r, 'LeftButton') end
+  _O1 = tostring(_OPENED)
+  _MOCK.counts[2672] = 5
+  ns.CraftList.Refresh()
+  r = Row(); _R2 = r and r.line.right or 'no row'
+  if r then r.__scripts.OnClick(r, 'LeftButton') end
+  _O2 = tostring(_OPENED); _C2 = tostring(_CRAFTED)
+  _MOCK.profLine = 185
+  _MOCK.FireEvent('TRADE_SKILL_SHOW')
+  _C3 = tostring(_CRAFTED)
+  _MOCK.profLine = 165
+""")
+print("task list first header:", lua.eval("_HDR"), "| missing row:", lua.eval("_R1"), "| opened:", lua.eval("_O1"))
+print("ready row:", lua.eval("_R2"), "| opened:", lua.eval("_O2"), "| crafted before window:", lua.eval("_C2"), "| after window:", lua.eval("_C3"))
 lua.execute("MerchantFrame:Hide(); _PIN = nil")
 slash(lua, "prof shop")
 lua.execute("""
-  for _, r in ipairs(CueTheCashierShoppingListFrame.rows) do if r:IsShown() and r.line and r.line.itemID == 2320 then _VR = r end end
+  for _, r in ipairs(CueTheCashierTaskListFrame.rows) do if r:IsShown() and r.line and r.line.itemID == 2320 then _VR = r end end
   if _VR then _VR.__scripts.OnClick(_VR, 'LeftButton') else _MOCK.addons.CueTheCashier_Crafting.ns.Vendors.Pin(2320) end
 """)
 print("vendor row pin:", lua.eval("_PIN"), "| super:", lua.eval("_SUPER"), "| row found:", lua.eval("_VR ~= nil"))
@@ -982,6 +1008,29 @@ lua.execute("""
 M.FireEvent("OWNED_AUCTIONS_UPDATED")
 M.RunTimers(2)
 check(lua, "auctions tab with a sold row")
+# 0.45.0: each sold auction is logged once; Blizzard's AH window is hidden again if it comes back
+lua.execute("""
+  local CM = CueTheCashier
+  local old = CM.Debug
+  _SOLDLOG, _BACK = 0, 0
+  CM.Debug = function(msg, ...)
+    if type(msg) == 'string' and msg:find('^Sold auction') then _SOLDLOG = _SOLDLOG + 1 end
+    if type(msg) == 'string' and msg:find('came back') then _BACK = _BACK + 1 end
+    return old(msg, ...)
+  end
+  Enum.AuctionStatus = Enum.AuctionStatus or { Active = 0, Sold = 1 }
+""")
+for _ in range(3):
+    M.FireEvent("OWNED_AUCTIONS_UPDATED")
+lua.execute("""
+  local ns = _MOCK.addons.CueTheCashier_Auctioning.ns
+  AuctionHouseFrame:Show(); if not ns.CraftTrade.showingOurs then ns.CraftTrade:ShowOurs() end
+  AuctionHouseFrame.GetAlpha = function() return 1 end
+  ns.CraftTrade.KeepHidden('test')
+  _MOCK.FireEvent('GROUP_ROSTER_UPDATE')
+""")
+print("extra sold lines after 3 more refreshes (expect 0):", lua.eval("_SOLDLOG"), "| AH window re-hidden (expect 2):", lua.eval("_BACK"))
+check(lua, "0.45 sold log once, AH re-hide")
 # ---------- Scenario 9: vendor buys and the Sell to Vendor button (0.30.0) ----------
 lua, M = new_runtime()
 startup(lua, M)

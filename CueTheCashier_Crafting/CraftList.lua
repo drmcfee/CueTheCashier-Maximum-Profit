@@ -12,8 +12,8 @@
 -- becomes a craft of its own ("for reagents", made first). **Craft**
 -- crafts the next recipe on the list that the open window can make now;
 -- each finished craft is taken off the list. The list is saved per
--- character. Where to get the reagents is the Shopping List's job
--- (ShoppingList.lua).
+-- character. Where to get the reagents is the Task List's job
+-- (TaskList.lua).
 --
 -- GUESS: C_TradeSkillUI.CraftRecipe works from an addon button click on
 -- Forever (Blizzard blocked auction purchases that way; crafting is not
@@ -266,6 +266,97 @@ function L.CraftNext()
   if not ok then CM.Debug("CraftRecipe ERROR: " .. tostring(err)) end
 end
 
+-- ------------------------------------------------------------------
+-- Crafting from the Task List (0.45.0, Kim)
+-- A craft row on the Task List: one click opens the right profession and
+-- starts the craft, but only when every reagent is in your bags; otherwise
+-- nothing opens and the missing reagents are listed.
+-- ------------------------------------------------------------------
+
+-- Reagents your bags lack for `count` crafts of a recipe, from the saved
+-- recipe: { { id, need, have }, ... } (empty = all there), and how many
+-- crafts your bags can make. nil when the recipe's reagents aren't known yet.
+function L.BagCheck(id, count)
+  local r = ns.db.recipes[id]
+  if not (r and r.reagents and #r.reagents > 0) then return nil end
+  count = math.max(1, count or 1)
+  local missing, can = {}, math.huge
+  for _, g in ipairs(r.reagents) do
+    local qty = math.max(1, g.qty or 1)
+    local have = C_Item.GetItemCount(g.id, false) or 0
+    can = math.min(can, math.floor(have / qty))
+    if have < qty * count then missing[#missing + 1] = { id = g.id, need = qty * count, have = have } end
+  end
+  return missing, can
+end
+
+local pendingCraft -- { id, count, name, skill, t }: waits for its profession window
+
+local function StartCraft(id, count, name)
+  if not (C_TradeSkillUI and C_TradeSkillUI.CraftRecipe) then
+    CM.Print("This client has no C_TradeSkillUI.CraftRecipe; craft it from Blizzard's window.")
+    return
+  end
+  local before = CM.blockedCount or 0
+  CM.Debug(("Task List: crafting %s x%d (recipe %d)."):format(tostring(name), count, id))
+  local ok, err = pcall(C_TradeSkillUI.CraftRecipe, id, count)
+  if not ok then CM.Debug("CraftRecipe ERROR: " .. tostring(err)) end
+  if (CM.blockedCount or 0) ~= before then
+    -- GUESS: a craft started by the window opening (not by your click)
+    -- may be blocked. Then the window is open and a second click crafts.
+    CM.Print(("The game didn't let CueTheCashier start %s by itself. Click it on the Task List again."):format(tostring(name)))
+  end
+end
+
+-- c = a craft from L.Summary().crafts.
+function L.CraftFromTask(c)
+  if not (c and c.id) then return end
+  local missing, can = L.BagCheck(c.id, 1)
+  if not missing then
+    CM.Print(("CueTheCashier doesn't know the reagents for %s yet. Open its profession window once."):format(tostring(c.name)))
+    return
+  end
+  if #missing > 0 then
+    local parts = {}
+    for _, m in ipairs(missing) do
+      parts[#parts + 1] = ("%d x %s"):format(m.need - m.have, ns.Costs.ItemName(m.id))
+    end
+    CM.Print(("Not crafting %s: missing in your bags: %s."):format(tostring(c.name), table.concat(parts, ", ")))
+    return
+  end
+  local count = math.min(c.count or 1, can)
+  if count < (c.count or 1) then
+    CM.Print(("Your bags have reagents for %d of %d %s; crafting %d."):format(can, c.count, tostring(c.name), count))
+  end
+  if c.skill and c.skill == ns.Professions.OpenProfession() then
+    pendingCraft = nil
+    StartCraft(c.id, count, c.name)
+    return
+  end
+  local T = C_TradeSkillUI
+  if not (c.skill and T and T.OpenTradeSkill) then
+    CM.Print("This client can't open a profession from an addon; open it from your spellbook.")
+    return
+  end
+  pendingCraft = { id = c.id, count = count, name = c.name, skill = c.skill, t = GetTime() }
+  local ok, err = pcall(T.OpenTradeSkill, c.skill)
+  local prof = ns.Char().profs[c.skill]
+  CM.Log(("Task List: open %s (%s) to craft %s: %s"):format(prof and prof.name or "profession", tostring(c.skill), tostring(c.name),
+    ok and "asked" or tostring(err)))
+  if not ok then pendingCraft = nil end
+end
+
+-- The profession window opened (or its recipes arrived): start a craft the
+-- Task List asked for, if it is for this window and still fresh (5 s).
+function L.PendingCraft()
+  local p = pendingCraft
+  if not p then return end
+  if GetTime() - p.t > 5 then pendingCraft = nil return end
+  if ns.Professions.OpenProfession() ~= p.skill then return end
+  pendingCraft = nil
+  StartCraft(p.id, p.count, p.name)
+end
+
 -- A craft finished: one off the list. Retail recipe IDs are spell IDs.
 function L.SpellDone(spellID)
   local q = Queue()
@@ -481,10 +572,10 @@ local function Build()
   f:AddButton("Clear", 60, function() wipe(Queue()); wipe(accepted); L.Refresh() end)
   -- Queue button (0.42.2, Kim): another addon can hide our Craft List
   -- button in the profession window, so the list can fill itself too.
-  -- Right-click opens the Shopping List (its old place here).
+  -- Right-click opens the Task List (its old place here).
   local queue = f:AddButton("Queue...", 90, function(_, button)
-    if button == "RightButton" then ns.ShoppingList.Show() else ns.GroupPicker.Show() end
-  end, "Click: pick groups and queue their profitable recipes.\nRight-click: Shopping List (what to buy and where to fetch the reagents).")
+    if button == "RightButton" then ns.TaskList.Show() else ns.GroupPicker.Show() end
+  end, "Click: pick groups and queue their profitable recipes.\nRight-click: Task List (crafts to make, what to buy and where to fetch the reagents).")
   queue:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   -- Closing it by hand keeps it closed until the next profession window.
   -- (Hiding with the profession window doesn't count.)
@@ -639,7 +730,7 @@ function L.Refresh()
   if ns.UI and ns.UI.UpdateAddButton then ns.UI.UpdateAddButton() end
   local s = L.Summary()
   L.Publish(s)
-  if ns.ShoppingList then ns.ShoppingList.Refresh(s) end
+  if ns.TaskList then ns.TaskList.Refresh(s) end
   if not (window and window:IsShown()) then return end
   -- Group by profession: the open one first, then by name.
   local open = ns.Professions.OpenProfession()
@@ -754,7 +845,7 @@ local function ShowChoices(owner)
       root:CreateButton("Restock items", function() L.Open("restock") end)
       root:CreateButton("From groups...", function() ns.GroupPicker.Show() end)
       root:CreateButton("Show the current list", function() L.Show() end)
-      root:CreateButton("Shopping List", function() ns.ShoppingList.Show() end)
+      root:CreateButton("Task List", function() ns.TaskList.Show() end)
     end)
   else
     -- No menu API: left-click = only this profession, right-click = all.

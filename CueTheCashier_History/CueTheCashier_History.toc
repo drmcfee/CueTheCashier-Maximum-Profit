@@ -3,7 +3,7 @@
 ## Notes: Price history for CueTheCashier (last 30 days). Loaded only when CueTheCashier needs it.
 ## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
 ## Author: Kim
-## Version: 0.44.0
+## Version: 0.45.0
 ## X-License: GPL-3.0-or-later
 ## Dependencies: CueTheCashier
 ## LoadOnDemand: 1

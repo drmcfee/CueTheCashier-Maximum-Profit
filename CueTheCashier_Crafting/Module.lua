@@ -115,6 +115,7 @@ function Module:OnEnable()
     P.WindowOpened()
     UI.Hook()
     ns.CraftList.WindowOpened()
+    ns.CraftList.PendingCraft() -- a craft clicked on the Task List (0.45.0)
     -- Blizzard may load its profession window on this same event.
     ns.Debounce("Hook profession window", 0.1, UI.Hook)
     ns.Debounce("Read recipes", 0.5, R.Scan)
@@ -126,10 +127,11 @@ function Module:OnEnable()
     ns.Debounce("Item names", 0.5, function()
       ns.namesWanted = false
       ns.CraftList.Refresh()
-      if ns.ShoppingList then ns.ShoppingList.Refresh() end
+      if ns.TaskList then ns.TaskList.Refresh() end
     end)
   end)
   self:RegisterEvent("TRADE_SKILL_LIST_UPDATE", function()
+    ns.CraftList.PendingCraft()
     ns.Debounce("Read recipes", 0.5, R.Scan)
     ns.Debounce("Read cooldowns", 0.6, ns.Cooldowns.Scan)
   end)
@@ -140,14 +142,14 @@ function Module:OnEnable()
   end)
   UI.Hook() -- in case Blizzard's profession window is already loaded
   ns.Merchant.Register(self)
-  ns.ShoppingList.Register()
+  ns.TaskList.Register()
   -- The saved craft list's shopping list, once bags are read.
   ns.Debounce("Craft list refresh", 2, ns.CraftList.Refresh)
 
   -- New prices (a scan, or vendor prices learned at a merchant).
   self:RegisterMessage("CM_PRICES_UPDATED", function() ns.Costs.Changed() end)
 
-  self:RegisterCommand("prof", function(_, rest) ns.Command(rest) end, "/cmp prof [list|queue|shop [auto]|restock|top|max %|buy|group|vendors|dock|move x y|button x y|top|reset]")
+  self:RegisterCommand("prof", function(_, rest) ns.Command(rest) end, "/cmp prof [list|queue|tasks [auto]|restock|top|max %|buy|group|vendors|dock|move x y|button x y|top|reset]")
   ns.AddSettings()
   ns.InventoryTab.Register()
   ns.Cooldowns.Register(self)
@@ -163,8 +165,8 @@ function ns.AddSettings()
       tooltip = "The Shopping tab buys auction reagents up to this share of the price the Crafting List counted with (/cmp prof max).",
       get = function() return ns.CraftList.MaxPercent() end,
       set = function(v) S().shopMaxPercent = v; ns.CraftList.Refresh() end },
-    { type = "toggle", label = "Open the Shopping List by itself",
-      tooltip = "At the auction house, a mailbox, the bank or a merchant, when there is something to get there (/cmp prof shop auto).",
+    { type = "toggle", label = "Open the Task List by itself",
+      tooltip = "At the auction house, a mailbox, the bank or a merchant, when there is something to get there (/cmp prof tasks auto).",
       get = function() return S().shopAuto ~= false end,
       set = function(v) S().shopAuto = v end },
   } })
@@ -184,7 +186,7 @@ end
 -- /cmp prof restock    every restock rule and what it would do (log)
 -- /cmp prof max <percent>  highest auction price the Shopping tab pays (% of list price)
 -- /cmp prof buy        at a merchant: buy the vendor reagents the craft list needs
--- /cmp prof shop [auto] the Shopping List (auto: turn opening by itself on/off)
+-- /cmp prof tasks [auto] the Task List (auto: turn opening by itself on/off); "shop" still works
 -- /cmp prof group     group for the open profession (Items, Materials)
 -- /cmp prof button x y  moves the Craft List button (top / reset: other spot / default)
 function ns.Command(rest)
@@ -197,13 +199,13 @@ function ns.Command(rest)
     end
     CM.Print(("Shopping buys auction reagents up to %d%% of the price the craft list used. /cmp prof max <percent> changes it."):format(ns.CraftList.MaxPercent()))
     return
-  elseif cmd == "shop" then
+  elseif cmd == "tasks" or cmd == "task" or cmd == "shop" then
     if a == "auto" then
       ns.db.settings.shopAuto = ns.db.settings.shopAuto == false
-      CM.Print("Shopping List opens by itself at the auction house, mailbox, bank and merchants: "
+      CM.Print("Task List opens by itself at the auction house, mailbox, bank and merchants: "
         .. (ns.db.settings.shopAuto and "on" or "off") .. ".")
     else
-      ns.ShoppingList.Show()
+      ns.TaskList.Show()
     end
     return
   elseif cmd == "group" then

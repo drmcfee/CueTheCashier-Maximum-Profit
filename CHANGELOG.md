@@ -3,6 +3,28 @@
 All notable changes to CueTheCashier: Maximum Profit. Newest first.
 Versions below 1.0 are beta: saved data is kept between versions, but settings and commands can still change.
 
+## 0.45.0
+
+- **Shopping List is now the Task List.** It holds more than things to buy, so the window, menus, minimap
+  tooltip and help all say Task List. `/cmp prof tasks` opens it (`/cmp prof shop` still works). It keeps
+  its saved spot and the "open by itself" setting.
+- **New: Profession crafts** at the top of the Task List: every craft on the Crafting List, in the list's
+  own order. A row says **craft** (green) when every reagent is in your bags: click it and the right
+  profession window opens and the craft starts (as many as your bags allow, up to the queued count). A
+  **missing** row (red) opens nothing; its tooltip and a chat line say what is missing.
+- **"(low data)" mark** on the tooltip's sale rate and sold per day lines (yours and the region's) when they
+  rest on fewer than 10 sold + expired auctions, so a rate from 2 auctions isn't trusted like one from 200.
+  Settings > Item tooltips: "Low data mark" turns it off, "Low data below" changes the number. The desktop
+  app's data can say how many player reports it has (`reports`) and gets the same mark.
+- Fix: accepting a party invite while Craft Trade was open brought Blizzard's auction house window back on
+  top of ours, and it stayed after the party ended. It is now hidden again whenever it comes back.
+- **Windows come to the front when you click them.** The main window, Crafting List, Task List, debug log
+  and Destroy window now share the game's normal window layer, so the one you click is drawn on top of the
+  others (ours and Blizzard's). Before, some always stayed behind. Yes/no and "how many" questions still
+  stay on top.
+- Fix: each sold auction is written to the debug log once, not 2 to 4 times per Auctions tab refresh.
+- Saved data: nothing moves or is renamed. Two new optional settings (`lowDataAt`, tooltip "lowData").
+
 ## 0.44.0
 
 - **Commodity prices are shared across server types.** Stackable items (leather, herbs, ore, cloth, potions

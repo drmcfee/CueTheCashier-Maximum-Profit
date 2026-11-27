@@ -1,4 +1,4 @@
-# CueTheCashier: Maximum Profit 0.44.0 (auction house scanner and craft profit)
+# CueTheCashier: Maximum Profit 0.45.0 (auction house scanner and craft profit)
 
 The addon was called CraftMarket until 0.38.0. 0.40.0 renamed the folders and 0.41.0 everything inside
 (saved variables `CueTheCashierDB` and friends, the `CueTheCashier` Lua table, frame names). Data saved
@@ -66,7 +66,7 @@ auction window with Buy, Sell, Auctions, Post, Vendor, Snipe, Disenchant and Sho
 **Open Mail** (mailbox, Inbox tab): click takes expired, cancelled and bought auction items; right-click takes the money from sales.
 **Send Mail** (mailbox, Send Mail tab): sends items whose Mailing operation names a character, keeping Keep in bags, at most Send at most; whole stacks, 12 per mail.
 **Sell to Vendor** (merchant window): sells what you bought on the Vendor tab or with Vendor Snipe (only that many, never your own copies); Shift-click also sells items whose Vendoring operation says to; up to 12 stacks per click.
-**0.37:** **Skins** are easy to make: a tiny addon with one `Skins:Register` call (see `SKINS.md`); pick one in Settings > General > Skin. A built-in **Dark** skin shows how. The **server type** now comes from the server's rules (Normal, PvP, Roleplay, Roleplay PvP, Hardcore), and the server's number is saved with it (`/cmp realm` lists them); data saved under an old "Preset N" name moves over by itself. **Sale rate** is worked out from your own auction mails: of your auctions that sold or expired, the share that sold (2 or more needed; cancelled ones don't count). It shows on the tooltip with how many auctions it is based on.
+**0.37:** **Skins** are easy to make: a tiny addon with one `Skins:Register` call (see `SKINS.md`); pick one in Settings > General > Skin. A built-in **Dark** skin shows how. The **server type** now comes from the server's rules (Normal, PvP, Roleplay, Roleplay PvP, Hardcore), and the server's number is saved with it (`/cmp realm` lists them); data saved under an old "Preset N" name moves over by itself. **Sale rate** is worked out from your own auction mails: of your auctions that sold or expired, the share that sold (2 or more needed; cancelled ones don't count). It shows on the tooltip with how many auctions it is based on. **0.45:** sale rate and sold per day lines that rest on fewer than 10 sold + expired auctions say **(low data)** in orange (Settings > Item tooltips: "Low data mark" on/off, "Low data below" for the number).
 **Main window, 0.36:** a **Gold** tab (gold per day for all characters or one, 30 days / 90 days / a year, as bars; saved once a day per character) and an **Inventory** tab (bags, bank, mail and auctions of every character on this server, per item, with market value; pick one character or all, search, click a header to sort). The **Ledger** tab's Profit view shows average buy and sell price and resale profit per item, and a new **Other** view lists repairs, postage, the auction house cut, deposits lost on expired and cancelled auctions (estimated) and gold traded. The Overview shows **Craft cooldowns** for every character (seen when you open the profession), and a chat line at login lists the ready ones.
 **One-key macro** (0.35): `/cmp macro` makes a character macro "CueTheCashier" (`/click CueTheCashierOneKeyButton`); bind it to a key. Each press does the next step: accepts an open CueTheCashier confirm box, posts or cancels the Post tab's next line, buys the selected item on a deal tab, or disenchants the Destroy list's top item. **Settings > Auction house > One-key scroll wheel** (Off, Ctrl, Alt, Shift): hold that key and scroll to press it, one step per scroll; `/cmp macro next` says what the next press does.
 **Destroy list** (0.35, `/cmp destroy`): uncommon and rare gear in your bags you can disenchant, best first, with disenchant and market value. The button (or the one-key macro) disenchants the top item, one item per press. Right-click a row to ignore an item; Shift+right-click the Item header to list ignored items again.
@@ -124,13 +124,17 @@ yourself are added as crafts "for reagents" and made first. **Craft** crafts the
 that the open window can make; finished crafts come off the list. `/cmp prof list` opens it,
 `/cmp prof button x y` moves the button (`top` for the window's top right, `reset` for the default).
 
-Shopping List: everything the crafts need that is not in your bags, in sections: **Auction House** and
+Task List (the Shopping List before 0.45.0): first **Profession crafts**, the crafts on the Crafting List in the
+list's own order. Each row says **craft** (green, every reagent is in your bags) or **missing** (red; hover
+for what and how many). Click a **craft** row: the right profession window opens (C_TradeSkillUI.OpenTradeSkill)
+and the craft starts, as many as your bags allow up to the queued count. A **missing** row opens nothing and
+says in chat what is missing. Then everything the crafts need that is not in your bags, in sections: **Auction House** and
 **Vendor** (what to buy, cheapest place, cost), **Mailbox** and **Bank** (click to take it out while
 that window is open) and **Alts** (who has it, from their last visit). It opens by itself at the auction
-house, a merchant, the mailbox or the bank when it has something for that place and stays open until you close it (`/cmp prof shop auto`
+house, a merchant, the mailbox or the bank when it has something for that place and stays open until you close it (`/cmp prof tasks auto`
 turns that off). Vendors you visit are remembered (name, place, what they sell; `/cmp prof vendors`), and clicking
 a Vendor row puts Blizzard's map pin on the nearest one that sells it. Open the list with a right-click on the minimap button, from the Craft List button's menu or
-with `/cmp prof shop`. One press of Escape closes it together with Blizzard's windows (and Craft Trade with the auction house). What you buy through CueTheCashier at the auction house counts
+with `/cmp prof tasks` (`/cmp prof shop` still works). One press of Escape closes it together with Blizzard's windows (and Craft Trade with the auction house). What you buy through CueTheCashier at the auction house counts
 as in the mailbox right away. Items you have on the auction house are not counted yet.
 
 Restock: under a recipe's craft cost, **Keep in stock** and **Min profit** make a rule for its item.

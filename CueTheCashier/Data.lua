@@ -450,7 +450,7 @@ end
 function Data:GetSaleRate(itemID)
   local st = Data:GetSaleStats(itemID)
   if st and st.rate then
-    return st.rate, ("%d of your %d auctions sold"):format(st.sold, st.sold + st.expired)
+    return st.rate, ("%d of your %d auctions sold"):format(st.sold, st.sold + st.expired), st.lowData
   end
   local entry = CM:GetRealmData().items[itemID]
   return entry and entry.saleRate, entry and entry.saleRateFrom
@@ -471,6 +471,16 @@ end
 -- It is rebuilt from the ledger each time, so nothing is lost if it goes.
 -- ------------------------------------------------------------------
 Data.MIN_AUCTIONS = 2 -- auctions needed before a sale rate is shown
+-- "Low data" (0.45.0, Kim): sale numbers that rest on fewer sold + expired
+-- auctions than this get a "(low data)" mark in the tooltip, so a rate from
+-- 2 auctions isn't trusted like one from 200. Settings > Item tooltips can
+-- change the number (CM.ProfileSettings().lowDataAt).
+Data.LOW_DATA = 10
+function Data.LowDataAt()
+  local n = CueTheCashierDB and CueTheCashierDB.profiles and tonumber(CM.ProfileSettings().lowDataAt)
+  return n or Data.LOW_DATA
+end
+function Data.IsLowData(records) return (records or 0) < Data.LowDataAt() end
 
 local function SaleTables()
   local s = CueTheCashierDB.sales
@@ -495,7 +505,8 @@ local function SaleSummary(rows)
     items, money = items + (c[4] or 0), money + (c[5] or 0)
   end
   if not any then return nil end
-  local out = { sold = sold, expired = expired, perDay = perDay, itemsSold = items, money = money }
+  local out = { sold = sold, expired = expired, perDay = perDay, itemsSold = items, money = money,
+    records = sold + expired, lowData = Data.IsLowData(sold + expired) }
   if sold + expired >= Data.MIN_AUCTIONS then out.rate = sold / (sold + expired) end
   if items > 0 then out.average = math.floor(money / items + 0.5) end
   return out
@@ -526,7 +537,9 @@ end
 -- Outside data: when an addon file sets the global CueTheCashierAppData
 -- (the planned desktop app will write one), its numbers win:
 --   CueTheCashierAppData = { time = <unix time>, region = { ["EU"] = {
---     [itemID] = { market =, min =, saleRate =, perDay =, saleAvg = } } } }
+--     [itemID] = { market =, min =, saleRate =, perDay =, saleAvg =, reports = } } } }
+--   reports (optional, 0.45.0): player reports the sale numbers rest on;
+--   under Data.LowDataAt() the tooltip marks them "(low data)".
 -- ------------------------------------------------------------------
 local REGION_MAX_AGE = 30 * DAY
 
@@ -615,6 +628,7 @@ function Data:GetRegion(itemID)
   local s = SaleSummary(rows)
   if s then
     out.sold, out.expired, out.rate, out.perDay, out.average = s.sold, s.expired, s.rate, s.perDay, s.average
+    out.records, out.lowData = s.records, s.lowData
   end
   local app = AppRegion(itemID)
   if app then
@@ -624,6 +638,11 @@ function Data:GetRegion(itemID)
     out.rate = tonumber(app.saleRate) or out.rate
     out.perDay = tonumber(app.perDay) or out.perDay
     out.average = tonumber(app.saleAvg) or out.average
+    -- The app can say how many player reports its sale numbers rest on
+    -- (reports = n); without it, the app's numbers count as enough.
+    local reports = tonumber(app.reports)
+    out.records = reports or out.records
+    out.lowData = reports and Data.IsLowData(reports) or false
   end
   if not (out.market or out.min or out.rate or out.perDay or out.average) then return nil end
   return out

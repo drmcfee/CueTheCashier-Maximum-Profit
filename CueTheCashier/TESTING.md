@@ -4,8 +4,39 @@ One list per module. Run a module's list when it is new or changed, tick each li
 anything odd together with the debug log: `/cmp debug` first, then `/cmp log`, Pause, Select All,
 Ctrl+C. Chat can't be copied, the log can.
 
-Before every list: install all six folders, log in, `/cmp status` shows version 0.44.0 and every
+Before every list: install all six folders, log in, `/cmp status` shows version 0.45.0 and every
 module, and there is no Lua error box.
+
+## Task List and low data (0.45.0)
+
+Task List (was Shopping List)
+- [ ] Right-click the minimap button, the Craft List menu (**Task List**), right-click **Queue...** on the
+      Crafting List, `/cmp prof tasks` and the old `/cmp prof shop` all open a window titled **Task List**.
+- [ ] It opens where the Shopping List was last dragged to (same saved spot), and still pops up by itself at
+      the auction house, mailbox, bank and merchants (Settings > Crafting > "Open the Task List by itself").
+- [ ] Queue a few crafts. The first section is **Profession crafts**: one row per craft, "2 x Name (Profession)",
+      in the same order as the Crafting List. Clicking rows doesn't move the list.
+- [ ] A craft with every reagent in your bags says **craft** (green). Close the profession window, click the
+      row: the right profession opens and the craft starts. If it opens but doesn't craft, chat says to click
+      again; click the row again (the window is open now) and it crafts. Send the log either way.
+- [ ] Gathering profs too: queue a Tanning (Skinning) recipe, close everything, click its row.
+- [ ] Bank a reagent: the row turns **missing** (red), its tooltip lists what is missing (have / need). Click it:
+      nothing opens, chat says what is missing.
+- [ ] Bags only cover 1 of 3 queued: the row says craft; clicking crafts 1 and chat says so.
+
+Low data mark
+- [ ] An item you sold only a few times (under 10 sold + expired): the tooltip says "Sale rate (2 of your 3
+      auctions sold) (low data)" in orange, and "Sold per day ... (low data)".
+- [ ] An item with 10 or more: no mark.
+- [ ] Settings > Item tooltips: "Low data mark" off hides it; "Low data below" set to 3 moves the line.
+
+Bug fixes
+- [ ] Craft Trade open, accept a party invite: Blizzard's auction house window does NOT appear over ours. Leave
+      the party: still not there. Craft Trade buttons can all be clicked (nothing invisible on top). With
+      `/cmp debug` on, the log says "Blizzard AH window came back (...), hidden again." when it happened.
+- [ ] Auctions tab with sold auctions, refresh a few times: each "Sold auction" line is in the log once.
+- [ ] Open the main window, Task List, `/cmp log` and Craft Trade so they overlap. Click each: it comes to the
+      front. Blizzard's bags or character window over ours: click ours, it comes to the front. Nothing gets stuck behind.
 
 ## Shared commodity prices (0.44.0)
 

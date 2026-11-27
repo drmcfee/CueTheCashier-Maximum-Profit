@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <b>Public beta</b> · version 0.44.0 · GPL-3.0 · <code>/cmp</code>
+  <b>Public beta</b> · version 0.45.0 · GPL-3.0 · <code>/cmp</code>
 </p>
 
 ---
@@ -30,8 +30,9 @@ windows, and you can give it your own look with a skin.
 - **Craft profit for every profession.** Your professions are found by themselves, including gathering
   and secondary skills (on Forever, Skinning, Herbalism, Mining and Fishing have recipe windows too).
   Each recipe shows its cost, what it sells for and the profit, right in the game's profession window.
-- **Crafting List and Shopping List.** Queue up profitable crafts in one click. The Shopping List tells
-  you what to buy and where: auction house, vendor, mailbox, bank or one of your alts.
+- **Crafting List and Task List.** Queue up profitable crafts in one click. The Task List tells
+  you what to buy and where (auction house, vendor, mailbox, bank or one of your alts), and starts each
+  craft in one click once the reagents are in your bags.
 - **Groups and operations.** Sort items into groups and give each group rules for posting, buying,
   crafting, mailing, selling to vendors and banking.
 - **Posting and cancelling.** Post Scan lists what to post and at what price; Cancel Scan finds your
@@ -56,7 +57,7 @@ windows, and you can give it your own look with a skin.
    |---|---|
    | `CueTheCashier` | The core: prices, tooltip, main window, settings, `/cmp`. Needed by all the others. |
    | `CueTheCashier_Auctioning` | Auction house scanning, buying, posting and the deal tabs. |
-   | `CueTheCashier_Crafting` | Professions, craft profit, Crafting List and Shopping List. |
+   | `CueTheCashier_Crafting` | Professions, craft profit, Crafting List and Task List. |
    | `CueTheCashier_Accounting` | The ledger, gold history and your own sale numbers. |
    | `CueTheCashier_Destroying` | The Destroy list and disenchant records. |
    | `CueTheCashier_History` | 30 days of daily prices (data only). |
@@ -84,7 +85,7 @@ You can turn a module off in the AddOns list if you don't want that feature. Onl
 2. **Open each profession once.** That's how CMP learns your recipes. From then on, every recipe in the
    profession window shows its profit (green) or loss (red).
 3. **Queue some crafts.** In a profession window, click **Craft List** and pick **All profitable
-   recipes**. Then open the **Shopping List** (right-click the minimap button) to see what to buy.
+   recipes**. Then open the **Task List** (right-click the minimap button) to see what to buy and what to craft.
 4. **Open the main window** with `/cmp` or the minimap button. Start with the Overview, then make a few
    groups when you are ready.
 
@@ -110,7 +111,7 @@ button switches back. Its tabs:
 **Every purchase asks first.** WoW Forever doesn't let addons buy from a plain button click, only from a
 confirm box. This isn't something an addon can change. Posting doesn't need a confirm box.
 
-### Professions, Crafting List and Shopping List
+### Professions, Crafting List and Task List
 
 CMP keeps the game's profession window and adds to it. Under the selected recipe you get **Craft cost**,
 **Sells for** (after the auction house cut) and **Profit**; hover them to see each reagent's price and
@@ -122,7 +123,9 @@ them yourself with a recipe any of your characters knows.
   last one too.
 - **Crafting List**: left-click a row for one more, right-click for one less. **Craft** makes the next
   recipe the open window can make. Reagents worth crafting yourself are added and made first.
-- **Shopping List**: what the list needs that you don't have, sorted by where to get it. It pops up at
+- **Task List** (called Shopping List before 0.45.0): first **Profession crafts**, the crafts on the
+  list; click one to open its profession and start it, only when every reagent is in your bags (otherwise
+  it tells you what is missing). Then what the list needs that you don't have, sorted by where to get it. It pops up at
   the auction house, a merchant, the mailbox or the bank when there is something for you there. At a
   merchant, **Buy Reagents** buys exactly what's missing. Clicking a vendor row puts a map pin on the
   nearest vendor you have visited that sells it.
@@ -225,7 +228,7 @@ you through it and lists every field; `CueTheCashier/SkinDark.lua` is a full exa
 | `/cmp prof` | Professions report (written to the log) |
 | `/cmp prof list` | Open the Crafting List |
 | `/cmp prof queue` | Queue crafts from chosen groups |
-| `/cmp prof shop` | Open the Shopping List (`auto` turns pop-ups on or off) |
+| `/cmp prof tasks` | Open the Task List (`auto` turns pop-ups on or off; `/cmp prof shop` still works) |
 | `/cmp prof top` | Your most profitable known recipes |
 | `/cmp prof restock` | Show what your restock rules would do |
 | `/cmp prof max <percent>` | Highest price to pay for reagents, as % of planned (default 120) |
@@ -253,6 +256,8 @@ to hear whether it works for you, even if the answer is just "fine". Step-by-ste
 
 | Feature | Since | What to check |
 |---|---|---|
+| [Task List and Profession crafts](CueTheCashier/TESTING.md#task-list-and-low-data-0450) | 0.45.0 | Click a craft on the Task List: does it open the right profession and start crafting? With a reagent missing, it should only tell you what's missing. |
+| [Low data mark](CueTheCashier/TESTING.md#task-list-and-low-data-0450) | 0.45.0 | Sale rate lines from only a few auctions say "(low data)". |
 | [Shared commodity prices](CueTheCashier/TESTING.md#shared-commodity-prices-0440) | 0.44.0 | Do stackable items really share one auction house across server types? Scan the same item (say Light Leather) on two server types a few minutes apart and compare with `/cmp region`. |
 | [Sale rate and region numbers](CueTheCashier/TESTING.md#sale-rate-and-region-0430) | 0.43.0 | Do sale rate, sold per day and average sale look right next to what you remember selling? |
 | [Base operations and craft queue](CueTheCashier/TESTING.md#defaults-lists-and-craft-queue-0420) | 0.42.0 | The "Not enough on the auction house?" box, the craft timer, the Crafting List remembering its place. |

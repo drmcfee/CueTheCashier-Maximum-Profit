@@ -3,7 +3,7 @@
 -- Every time a merchant window opens, the vendor is remembered: its name,
 -- NPC ID, where you stood (map and position, close enough for a pin) and
 -- what it sells. Shared by all your characters (CueTheCashierCraftingDB.vendors).
--- The Shopping List then pins the nearest known vendor that sells a reagent,
+-- The Task List then pins the nearest known vendor that sells a reagent,
 -- with Blizzard's own map pin (C_Map.SetUserWaypoint + super tracking).
 -- GUESS: Forever has retail's map pin API (Kim sees map pins in game).
 -- Until an outside vendor list is added, only vendors you have visited

@@ -96,23 +96,30 @@ end
 
 -- Your own sales, and the region (all server types) numbers (0.43.0).
 -- Shown even for items without a scan on this server.
+-- "(low data)" (0.45.0): the numbers rest on fewer sold + expired auctions
+-- than Settings > Item tooltips > "Low data below" (Data.LowDataAt).
+local LOW = " |cffff9933(low data)|r"
+local function Low(flag)
+  return (flag and CM.TooltipLineShown("lowData")) and LOW or ""
+end
+
 AddSaleLines = function(tooltip, itemID)
   local Shown = CM.TooltipLineShown
-  local rate, from = CM.Data:GetSaleRate(itemID)
+  local rate, from, low = CM.Data:GetSaleRate(itemID)
   if rate and Shown("saleRate") then
-    Line(tooltip, "Sale rate" .. (from and (" |cff808080(" .. from .. ")|r") or ""), Pct(rate))
+    Line(tooltip, "Sale rate" .. (from and (" |cff808080(" .. from .. ")|r") or "") .. Low(low), Pct(rate))
   end
   local st = CM.Data:GetSaleStats(itemID)
   if st and st.perDay > 0 and Shown("soldPerDay") then
-    Line(tooltip, "Sold per day |cff808080(you, 30 days)|r", PerDay(st.perDay))
+    Line(tooltip, "Sold per day |cff808080(you, 30 days)|r" .. Low(st.lowData), PerDay(st.perDay))
   end
   local r = CM.Data:GetRegion(itemID)
   -- Only when another server adds something (else it is this server again).
   if not (r and (r.otherServers or r.fromApp) and Shown("region")) then return end
   local note = r.fromApp and " |cff808080(app)|r" or (r.servers > 1 and (" |cff808080(" .. r.servers .. " servers)|r") or "")
   if r.market then Line(tooltip, "Region market value" .. note, Money(r.market)) end
-  if r.rate then Line(tooltip, "Region sale rate", Pct(r.rate)) end
-  if r.perDay and r.perDay > 0 then Line(tooltip, "Region sold per day", PerDay(r.perDay)) end
+  if r.rate then Line(tooltip, "Region sale rate" .. Low(r.lowData), Pct(r.rate)) end
+  if r.perDay and r.perDay > 0 then Line(tooltip, "Region sold per day" .. Low(r.lowData), PerDay(r.perDay)) end
 end
 
 if TooltipDataProcessor and Enum.TooltipDataType then

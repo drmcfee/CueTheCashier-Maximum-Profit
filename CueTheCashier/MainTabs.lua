@@ -465,6 +465,7 @@ local TOOLTIP_LINES = {
   { "avg30", "30-day average", "Market value averaged over 30 days." },
   { "saleRate", "Sale rate", "Share of your auctions of the item that sold on this server (needs 2)." },
   { "soldPerDay", "Sold per day", "How many you sold per day on this server, over the last 30 days." },
+  { "lowData", "Low data mark", "Adds \"(low data)\" to sale rate and sold per day lines that rest on only a few sold or expired auctions (below the number set under Low data below)." },
   { "region", "Region", "Market value, sale rate and sold per day over every server type and faction in your region, when your characters on another one saw the item." },
   { "disenchant", "Disenchant value", "What disenchanting the item is worth (estimate). Shown on items that bind when equipped, or on every item when this character knows Enchanting." },
   { "deMats", "Disenchant materials", "What the item disenchants into, with the chance of each." },
@@ -486,6 +487,10 @@ for _, l in ipairs(TOOLTIP_LINES) do
       ps.tooltipHide[l[1]] = (not v) or nil
     end }
 end
+tooltipSettings[#tooltipSettings + 1] = { type = "number", label = "Low data below", min = 2, max = 200,
+  tooltip = "Sale numbers that rest on fewer sold + expired auctions than this get the \"(low data)\" mark.",
+  get = function() return CM.Data.LowDataAt() end,
+  set = function(v) CM.ProfileSettings().lowDataAt = v end }
 API.RegisterSettings("tooltip", { title = "Item tooltips", order = 20, settings = tooltipSettings })
 
 -- Auction house settings are kept in the core's saved settings, so they

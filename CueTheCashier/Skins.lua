@@ -15,7 +15,7 @@ CM.Skins = Skins
 -- Default: the stock WoW look, built only from Blizzard templates and fonts.
 Skins.registry.Blizzard = {
   buttonTemplate = "UIPanelButtonTemplate",
-  -- Small windows (Crafting List, Shopping List, debug log, Destroy, questions).
+  -- Small windows (Crafting List, Task List, debug log, Destroy, questions).
   -- Since 0.42.1 the same frame as the auction house and main window, without
   -- the portrait, so the whole addon has one look (Kim). Their lists sit on
   -- an inset like the auction house's.

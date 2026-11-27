@@ -145,7 +145,7 @@ function ns.MoneyText(copper)
   return (neg and "-" or "") .. text
 end
 
--- Not loaded yet (Shopping List showed numbers, 0.41): the game is asked
+-- Not loaded yet (Task List showed numbers, 0.41): the game is asked
 -- for it and the lists redraw when it arrives (Module.lua).
 local function ItemName(id)
   local name = (C_Item.GetItemInfo(id)) or (API.GetItemName and API.GetItemName(id))

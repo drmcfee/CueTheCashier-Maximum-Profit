@@ -1,6 +1,6 @@
 -- CueTheCashier: round minimap button in the default WoW style, with
 -- the CueTheCashier cash register icon. Left-click opens the CueTheCashier main
--- window (MainWindow.lua), right-click the Shopping List. Modules add lines
+-- window (MainWindow.lua), right-click the Task List. Modules add lines
 -- to its tooltip through the CM_MINIMAP_TOOLTIP message. Drag it around
 -- the edge of the minimap; the spot is saved.
 -- /cmp minimap hides or shows it.
@@ -34,7 +34,7 @@ local function ShowTooltip(self)
   -- The Accounting module adds today's spent / received / profit here.
   CM.SendMessage("CM_MINIMAP_TOOLTIP", GameTooltip)
   GameTooltip:AddLine(" ")
-  GameTooltip:AddLine("Click: CueTheCashier window. Right-click: Shopping List. Drag to move.", 0.6, 0.6, 0.6)
+  GameTooltip:AddLine("Click: CueTheCashier window. Right-click: Task List. Drag to move.", 0.6, 0.6, 0.6)
   GameTooltip:Show()
 end
 
@@ -63,7 +63,7 @@ local function Build()
 
   button:SetScript("OnClick", function(_, b)
     if b == "RightButton" then
-      CM.RunCommand("prof", "shop")
+      CM.RunCommand("prof", "tasks")
     else
       CM.Try("Main window", CM.MainWindow.Toggle, CM.MainWindow)
     end

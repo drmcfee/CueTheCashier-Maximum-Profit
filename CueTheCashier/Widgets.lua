@@ -3,6 +3,21 @@
 -- Copyright (C) 2026 Kim. Licensed under the GNU GPL v3 or later; see LICENSE.
 local _, CM = ...
 
+-- Our windows come to the front when you click them (0.45.0, Kim): they all
+-- share Blizzard's own window layer (MEDIUM, like the auction house and
+-- profession windows) and are "top level", so the one you click is drawn
+-- over the others, ours and Blizzard's alike. Before, each had its own
+-- layer (HIGH, DIALOG) and some always stayed behind others. Questions
+-- (yes/no, how many to queue) keep the DIALOG layer: they stay on top.
+function CM.Raisable(f)
+  f:SetFrameStrata("MEDIUM")
+  f:SetToplevel(true)
+  if f.HookScript then
+    f:HookScript("OnMouseDown", function(self) if self.Raise then self:Raise() end end)
+    f:HookScript("OnShow", function(self) if self.Raise then self:Raise() end end)
+  end
+end
+
 -- Yes/no popup in Blizzard's style. Purchases must be made from its
 -- Accept (Forever blocks them from addon buttons, confirmed in 0.10.8).
 -- Never assign the StaticPopupDialogs global itself (not even "X = X or {}"):

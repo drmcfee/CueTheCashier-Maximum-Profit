@@ -1,8 +1,8 @@
 -- CueTheCashier Crafting: a simple list window in Blizzard's style, used by
--- the Crafting List and the Shopping List. Rows are text left and right;
+-- the Crafting List and the Task List. Rows are text left and right;
 -- headers are gold. Each row can have an item tooltip, extra tooltip
 -- lines and a click action.
---   local w = ns.ListWindow.New("CueTheCashierShoppingFrame", "Shopping List", 380, 440)
+--   local w = ns.ListWindow.New("CueTheCashierTaskListFrame", "Task List", 380, 440)
 --   w:SetLines({ { header = "Auction House", right = "1g" },
 --                { left = "3 x Light Leather", right = "1s 20c", itemID = 2318,
 --                  tip = { "Click to buy it" }, onClick = function(button) end } })
@@ -61,14 +61,15 @@ end
 -- bottom: room below the list for buttons and a totals line.
 -- Not in Blizzard's Escape list (UISpecialFrames): that gave "blocked"
 -- warnings in game (0.19.0) and took an extra press. The Crafting List hides
--- with the profession window; the Shopping List watches Escape itself.
+-- with the profession window; the Task List watches Escape itself.
 function W.New(name, title, width, height, bottom)
   local skin = CM.Skins:Get()
   local f = CreateFrame("Frame", name, UIParent, skin.windowTemplate)
   CM.Skins:ApplyWindow(f)
   f:SetSize(width, height)
   f:SetPoint("CENTER", 300, 0)
-  f:SetFrameStrata("HIGH")
+  -- Comes to the front when clicked (0.45.0, Widgets.lua).
+  if CM.Raisable then CM.Raisable(f) else f:SetFrameStrata("HIGH") end
   f:SetMovable(true)
   f:EnableMouse(true)
   f:RegisterForDrag("LeftButton")
@@ -146,7 +147,7 @@ function W.SetLines(f, lines)
   f.content:SetHeight(math.max(y, 10))
 end
 
--- Remembering a free-standing window's spot (Shopping List): saved as
+-- Remembering a free-standing window's spot (Task List): saved as
 -- { point, x, y } against the screen in t[key].
 function W.SavePosition(f, t, key)
   local point, _, rel, x, y = f:GetPoint(1)

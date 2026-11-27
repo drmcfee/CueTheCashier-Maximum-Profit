@@ -3,7 +3,7 @@
 ## Notes: CueTheCashier's auction house module: full scan, the Craft Trade window (Buy, Sell, Auctions, Post, Vendor, Snipe, Disenchant, Shopping) and buying. Loaded when the auction house opens.
 ## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
 ## Author: Kim
-## Version: 0.44.0
+## Version: 0.45.0
 ## X-License: GPL-3.0-or-later
 ## Dependencies: CueTheCashier
 ## LoadOnDemand: 1

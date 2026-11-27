@@ -216,6 +216,8 @@ function AuctionsTab:Refresh()
   UpdateButtons()
 end
 
+local loggedSold = {} -- auctionID -> true once its "Sold auction" line is in the log
+
 local function ReadRows()
   local rows = {}
   local selID = state.selected and state.selected.auctionID
@@ -234,8 +236,14 @@ local function ReadRows()
   end
   state.rows = rows
   CM.Debug(("Auctions tab: %d %s."):format(#rows, state.mode))
+  -- Each sold auction is logged once per session (0.45.0): the game sends
+  -- OWNED_AUCTIONS_UPDATED several times per refresh, which logged every
+  -- sold auction 2 to 4 times. "Time left" on a sold auction is the wait
+  -- until the gold arrives by mail (up to 1 hour).
   for _, r in ipairs(rows) do
-    if Enum.AuctionStatus and r.status == Enum.AuctionStatus.Sold then
+    if Enum.AuctionStatus and r.status == Enum.AuctionStatus.Sold and r.auctionID
+      and not loggedSold[r.auctionID] then
+      loggedSold[r.auctionID] = true
       CM.Debug(("Sold auction %s: bid %s, buyout %s, qty %s, time left %s s."):format(tostring(r.auctionID),
         tostring(r.bidAmount), tostring(r.buyoutAmount), tostring(r.quantity), tostring(r.timeLeftSeconds)))
     end
