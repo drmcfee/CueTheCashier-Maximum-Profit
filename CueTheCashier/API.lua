@@ -83,7 +83,7 @@
 -- Copyright (C) 2026 Kim. Licensed under the GNU GPL v3 or later; see LICENSE.
 local _, CM = ...
 
-local API = { VERSION = 1, MINOR = 13 }
+local API = { VERSION = 1, MINOR = 14 }
 CM.API = API
 CM.API_VERSION = API.VERSION
 

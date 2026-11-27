@@ -170,7 +170,7 @@ local function BuildBox(form)
   box:SetScript("OnEnter", ShowBreakdown)
   box:SetScript("OnLeave", function() GameTooltip:Hide() end)
   UI.BuildRestock(box)
-  -- Add the shown recipe to the Crafting List by hand, profitable or not.
+  -- Add the shown recipe to the Task List by hand, profitable or not.
   local skin = CM.Skins:Get()
   -- On the Keep in stock line, right of its box (the price lines above can be long).
   local add = CreateFrame("Button", nil, box, skin.buttonTemplate)
@@ -186,7 +186,7 @@ local function BuildBox(form)
   end)
   add:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-    GameTooltip:AddLine("Add to Crafting List", 1, 1, 1)
+    GameTooltip:AddLine("Add to Task List", 1, 1, 1)
     GameTooltip:AddLine("Click: one more. Shift-click: five more. Right-click: one less (Shift: five less). Works for any recipe you know, profitable or not.", nil, nil, nil, true)
     GameTooltip:Show()
   end)

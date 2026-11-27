@@ -294,24 +294,24 @@ lua.execute("ProfessionsFrame.CraftingPage.CreateAllButton = _MOCK.NewWidget('Bu
 lua.execute("_MOCK.counts = { [2318] = 1 }; C_Item.GetItemCount = function(id) return _MOCK.counts[id] or 0 end")
 slash(lua, "prof list open"); check(lua, "prof list open")
 lua.execute("""
-  local f = CueTheCashierCraftListFrame; _OUT = {}
+  local f = CueTheCashierTaskListFrame; _OUT = {}
   for _, r in ipairs(f.rows) do if r:IsShown() then _OUT[#_OUT+1] = r.left:GetText() .. ' | ' .. r.right:GetText() end end
   _OUT[#_OUT+1] = f.totals:GetText()
 """)
 print("craft list:\n  " + "\n  ".join(lua.eval("table.concat(_OUT, '\\n')").split("\n")))
-lua.execute("for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r.line and r.line.left and r.line.left:find('Test Bag') then r.__scripts.OnClick(r, 'LeftButton') end end")
-lua.execute("for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r.line and r.line.left and r.line.left:find('Light Armor') then r.__scripts.OnClick(r, 'RightButton') end end")
+lua.execute("IsShiftKeyDown = function() return true end; for _, r in ipairs(CueTheCashierTaskListFrame.rows) do if r.line and r.line.left and r.line.left:find('Test Bag') then r.__scripts.OnClick(r, 'LeftButton') break end end; IsShiftKeyDown = function() return false end")
+lua.execute("for _, r in ipairs(CueTheCashierTaskListFrame.rows) do if r.line and r.line.left and r.line.left:find('Light Armor') then r.__scripts.OnClick(r, 'RightButton') break end end")
 print("queue after click:", lua.eval("(function() local t = {} for k, v in pairs(select(1, _MOCK.addons.CueTheCashier_Crafting.ns.Char()).queue) do t[#t+1] = k .. '=' .. v end table.sort(t) return table.concat(t, ' ') end)()"))
 lua.execute("C_TradeSkillUI.CraftRecipe = function(id, n) _CRAFTED = id .. 'x' .. n end; local gi = C_TradeSkillUI.GetRecipeInfo; C_TradeSkillUI.GetRecipeInfo = function(id) local i = gi(id); if i then i.numAvailable = 3 end return i end")
-lua.execute("CueTheCashierCraftListFrame.craftButton.__scripts.OnClick()")
+lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.CraftList.CraftNext()")
 print("crafted:", lua.eval("_CRAFTED"))
 lua.execute("C_TradeSkillUI.GetRecipeInfo = gi_orig or C_TradeSkillUI.GetRecipeInfo; _CRAFTED = nil")
 lua.execute("local gi = C_TradeSkillUI.GetRecipeInfo; C_TradeSkillUI.GetRecipeInfo = function(id) local i = gi(id); if i then i.numAvailable = nil end return i end")
 lua.execute("_MOCK.counts = { [2318] = 40, [4444] = 5, [2320] = 5, [783] = 9 }")
-lua.execute("CueTheCashierCraftListFrame.craftButton.__scripts.OnClick()")
+lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.CraftList.CraftNext()")
 print("crafted without numAvailable (bags):", lua.eval("_CRAFTED"))
 lua.execute("_MOCK.counts = {}; _CRAFTED = nil")
-lua.execute("CueTheCashierCraftListFrame.craftButton.__scripts.OnClick()")
+lua.execute("_MOCK.addons.CueTheCashier_Crafting.ns.CraftList.CraftNext()")
 print("empty bags, log:", [l[:140] for l in lua.eval("CueTheCashierDebugFrame.edit:GetText()").split("\n")[-3:]])
 M.FireEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "g", 104)
 print("queue after craft:", lua.eval("(function() local t = {} for k, v in pairs(select(1, _MOCK.addons.CueTheCashier_Crafting.ns.Char()).queue) do t[#t+1] = k .. '=' .. v end table.sort(t) return table.concat(t, ' ') end)()"))
@@ -392,17 +392,8 @@ lua.execute("""
   tab.GetLeft = function() return 497 end; tab.GetRight = function() return 560 end
   tab.GetTop = function() return 650 end; tab.GetBottom = function() return 300 end
   pf.GetChildren = function() return tab end
-  ns.db.settings.listDock = nil
-  ns.CraftList.Dock()
-  _DX = tostring(ns.CraftList.dockX)
-  local w = CueTheCashierCraftListFrame
-  w.GetLeft = function() return 600 end; w.GetTop = function() return 690 end
-  w.__scripts.OnDragStop(w)
-  local ld = ns.db.settings.listDock; _DS = ld and (ld.x .. ',' .. ld.y) or ('nil: ' .. (CueTheCashierDebugFrame and CueTheCashierDebugFrame.edit:GetText():sub(-300) or ''))
   pf.GetChildren = function() return end
 """)
-_MOCK_RUN = M.RunTimers(2)
-print("0.42.1 dock x past the tab bar (want 62):", lua.eval("_DX"), "| saved after drag (want 100,-10):", lua.eval("_DS"))
 lua.execute("""
   local ns = _MOCK.addons.CueTheCashier_Crafting.ns
   local API = CueTheCashier.API
@@ -448,7 +439,7 @@ print("rule 2304:", lua.eval("CueTheCashierCraftingDB.restock[2304].keep"), lua.
 lua.execute("_MOCK.counts = { [2304] = 1 }")
 slash(lua, "prof list restock")
 lua.execute("""
-  local f = CueTheCashierCraftListFrame; _OUT = {}
+  local f = CueTheCashierTaskListFrame; _OUT = {}
   for _, r in ipairs(f.rows) do if r:IsShown() then _OUT[#_OUT+1] = r.left:GetText() .. ' | ' .. r.right:GetText() end end
 """)
 print("restock list:\n  " + "\n  ".join(lua.eval("table.concat(_OUT, '\\n')").split("\n")))
@@ -556,40 +547,26 @@ print("escape closes it:", lua.eval("not CueTheCashierTaskListFrame:IsShown()"))
 lua.execute("CueTheCashierTaskListFrame:Hide(); CueTheCashierMinimapButton.__scripts.OnClick(CueTheCashierMinimapButton, 'RightButton')")
 print("minimap right-click opens it:", lua.eval("CueTheCashierTaskListFrame:IsShown()"))
 print("not in UISpecialFrames:", lua.eval("(function() for _, n in ipairs(UISpecialFrames) do if n:find('List') or n:find('CraftTrade') then return false end end return true end)()"))
-M.FireEvent("TRADE_SKILL_CLOSE")
-print("craft list hidden with prof window:", lua.eval("not CueTheCashierCraftListFrame:IsShown()"))
+lua.execute("CueTheCashierTaskListFrame:Hide()")
 M.FireEvent("TRADE_SKILL_SHOW"); M.RunTimers(3)
-print("craft list shown with prof window:", lua.eval("CueTheCashierCraftListFrame:IsShown()"))
-lua.execute("""
-  _OUT = {}
-  for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r:IsShown() and r.line.header then _OUT[#_OUT+1] = r.line.header .. ' skill ' .. tostring(r.line.skill) end end
-""")
-print("profession titles:", lua.eval("table.concat(_OUT, ', ')"))
-lua.execute("_CRAFTED = nil; _MOCK.counts = { [2318] = 40, [4444] = 5, [2320] = 5, [783] = 9 }")
-lua.execute("""
-  for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r:IsShown() and r.line.skill == 165 then r.__scripts.OnClick(r, 'LeftButton') end end
-""")
-print("title click crafts:", lua.eval("_CRAFTED"))
+print("0.46.0 task list opens with prof window (crafts queued):", lua.eval("CueTheCashierTaskListFrame:IsShown()"),
+      "| no Crafting List window:", lua.eval("CueTheCashierCraftListFrame == nil"))
 lua.execute("""
   local ns = _MOCK.addons.CueTheCashier_Crafting.ns
   CueTheCashierCraftingDB.recipes[900] = { name = 'Spiced Wolf Meat', skill = 185, out = 2680, q1 = 1, q2 = 1, reagents = { { id = 2672, qty = 1 } } }
   ns.Char().profs[185] = { name = 'Cooking', spells = { { id = 2550 } } }
   ns.Char().queue[900] = 2
   ns.CraftList.Refresh()
-  _OUT = {}
-  for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r:IsShown() and r.line.header then _OUT[#_OUT+1] = r.line.header end end
-  C_TradeSkillUI.OpenTradeSkill = function(s) _OPENED = s end
-  for _, r in ipairs(CueTheCashierCraftListFrame.rows) do if r:IsShown() and r.line.skill == 185 then r.__scripts.OnClick(r, 'LeftButton') end end
   -- bad saved openers get cleaned
   CueTheCashierCraftingDB.openers = { [165] = 104, [356] = 1278068, [393] = 1278068, [185] = 2550 }
   ns.Professions.CleanOpeners()
   _OP = {} for k, v in pairs(CueTheCashierCraftingDB.openers) do _OP[#_OP+1] = k .. '=' .. v end table.sort(_OP)
 """)
-print("titles with cooking:", lua.eval("table.concat(_OUT, ', ')"), "| cooking title opens:", lua.eval("_OPENED"))
 print("openers after clean:", lua.eval("table.concat(_OP, ' ')"))
 # 0.45.0 Task List: Profession crafts section
 lua.execute("""
   local ns = _MOCK.addons.CueTheCashier_Crafting.ns
+  C_TradeSkillUI.OpenTradeSkill = function(s) _OPENED = s end
   _MOCK.counts[2672] = 0; _OPENED = nil; _CRAFTED = nil
   ns.TaskList.Show()
   local function Row()
@@ -608,11 +585,52 @@ lua.execute("""
   _O2 = tostring(_OPENED); _C2 = tostring(_CRAFTED)
   _MOCK.profLine = 185
   _MOCK.FireEvent('TRADE_SKILL_SHOW')
+  r = Row(); if r then r.__scripts.OnClick(r, 'LeftButton') end -- second click crafts
   _C3 = tostring(_CRAFTED)
   _MOCK.profLine = 165
 """)
 print("task list first header:", lua.eval("_HDR"), "| missing row:", lua.eval("_R1"), "| opened:", lua.eval("_O1"))
-print("ready row:", lua.eval("_R2"), "| opened:", lua.eval("_O2"), "| crafted before window:", lua.eval("_C2"), "| after window:", lua.eval("_C3"))
+print("ready row:", lua.eval("_R2"), "| opened:", lua.eval("_O2"), "| crafted after 1st click (want nil):", lua.eval("_C2"), "| after 2nd click (want 900x2):", lua.eval("_C3"))
+# 0.46.0: crafter per operation, recipe routing, elsewhere section
+lua.execute("""
+  local ns = _MOCK.addons.CueTheCashier_Crafting.ns
+  local server = CueTheCashier.API.GetServerKey()
+  CueTheCashierCraftingDB.chars['Altchar - ' .. server] = { profs = { [185] = { name = 'Cooking', rank = 200 } }, known = { [900] = true } }
+  ns.Recipes.BuildIndex()
+  ns.Char().known[900] = nil
+  local who, note = ns.Crafters.WhoCrafts(2680, { crafter = 'altchar' })
+  _W1 = (who and who.name or 'nil') .. ' / ' .. tostring(note)
+  who, note = ns.Crafters.WhoCrafts(2680, { crafter = 'Nobody' })
+  _W2 = (who and who.name or 'nil') .. ' / ' .. tostring(note)
+  local gi = C_Item.GetItemInfo
+  C_Item.GetItemInfo = function(id, ...)
+    if id == 9500 then return 'Recipe: Spiced Wolf Meat', nil, 1, 10, 0, 'Recipe', 'Cooking', 1, '', 0, 0, 9 end
+    return gi(id, ...)
+  end
+  ns.Char().profs[185].rank = 50
+  local r = ns.Crafters.Route(9500)
+  _R1 = r and (tostring(r.learnOn) .. ' / ' .. tostring(r.why) .. ' / known by ' .. table.concat(r.knownBy, ',')) or 'nil'
+  CueTheCashierCraftingDB.chars['Altchar - ' .. server].known[900] = nil
+  ns.Crafters.Route(9500)
+  r = ns.Crafters.Route(9500)
+  _R2 = r and (tostring(r.learnOn) .. ' / ' .. tostring(r.why)) or 'nil'
+  ns.CraftList.Elsewhere()[2680] = { who = 'Altchar', count = 3, op = 'Cook' }
+  ns.TaskList.Refresh()
+  _E = ''
+  for _, row in ipairs(CueTheCashierTaskListFrame.rows) do
+    if row:IsShown() and row.line and (row.line.header == 'Crafted by other characters' or (row.line.left or ''):find('^Altchar')) then
+      _E = _E .. (row.line.header or row.line.left) .. ' | '
+    end
+  end
+  GameTooltip.lines = {}; _MOCK.tooltipPost(GameTooltip, { id = 9500 }); _TT = table.concat(GameTooltip.lines, ' / ')
+  ns.CraftList.Clear()
+  _EC = next(ns.CraftList.Elsewhere()) == nil
+""")
+print("0.46 crafter named:", lua.eval("_W1"), "| unknown name:", lua.eval("_W2"))
+print("0.46 route (main alt knows it):", lua.eval("_R1"))
+print("0.46 route (nobody knows it):", lua.eval("_R2"))
+print("0.46 elsewhere section:", lua.eval("_E"), "| cleared:", lua.eval("_EC"))
+print("0.46 recipe tooltip:", lua.eval("_TT"))
 lua.execute("MerchantFrame:Hide(); _PIN = nil")
 slash(lua, "prof shop")
 lua.execute("""
@@ -1091,6 +1109,33 @@ M.RunTimers(1)
 slash(lua, "tovendor")
 print("late merchant window: button", lua.eval("CueTheCashierVendorSellButton:IsShown()"), lua.eval("CueTheCashierVendorSellButton:GetText()"))
 check(lua, "sell to vendor")
+# 0.46.0: vendor it after too many reposts
+lua.execute("""
+  local API = CueTheCashier.API
+  local key = CueTheCashier:GetAuctionKey()
+  CueTheCashierDB.sales = CueTheCashierDB.sales or {}
+  CueTheCashierDB.sales[key] = { t = time(), days = 30, items = { [2318] = { 0, 2, 0, 0, 0, 4, 2 }, [10940] = { 1, 3, 1, 1, 400, 6, 3 } } }
+  local v, why = API.GetRepostAdvice(2318)   -- cheap: market 6, vendor 10 -> AH earns nothing over a vendor
+  _V1 = tostring(v) .. ' / ' .. tostring(why)
+  v, why = API.GetRepostAdvice(10940)        -- worth 500, deposits 1c a post: keep posting
+  _V2 = tostring(v) .. ' / ' .. tostring(why)
+  API.CreateOperation('vendor', 'Repost')
+  API.SetOperationValue('vendor', 'Repost', 'repostLimit', 3)
+  local rg = API.CreateGroup('Repost')
+  API.AddItemToGroup(rg, 10940)
+  API.SetGroupOperation(rg, 'vendor', 'Repost')
+  _OK = 'op ' .. tostring(CueTheCashier.Operations.ForItem(10940, 'vendor'))
+  v, why = API.GetRepostAdvice(10940)        -- override: 3 failed posts
+  _V3 = tostring(v) .. ' / ' .. tostring(why)
+  local p = API.GetVendorSellPlan(true)
+  _V4 = '' for _, x in ipairs(p) do if x.itemID == 10940 then _V4 = x.itemID .. 'x' .. x.count .. ' ' .. x.why end end
+  API.SetGroupOperation(rg, 'vendor', false)
+  CueTheCashierDB.sales[key] = nil
+""")
+print("0.46 vendor it, cheap item (want true):", lua.eval("_V1"))
+print("0.46 vendor it, pricey item (want false):", lua.eval("_V2"))
+print("0.46 vendor it, limit 3 (want true):", lua.eval("_V3"), lua.eval("_OK"), "| sell plan:", lua.eval("_V4"))
+check(lua, "0.46 vendor it")
 # ---------- Scenario 10: profiles and mailing (0.31.0) ----------
 lua, M = new_runtime(legacy="""
 CueTheCashierDB = { dbVersion = 3, realms = {}, itemInfo = {}, settings = { snipePercent = 42, debug = false },

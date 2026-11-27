@@ -462,7 +462,10 @@ end
 local DAY = 86400
 
 -- One ledger's numbers: { t, days, items = { [id] = { sold, expired,
--- sold30, itemsSold, money } } }, and the item count.
+-- sold30, itemsSold, money, depositsLost, expiredSinceSale } } }, and the
+-- item count. 0.46.0: depositsLost = deposits lost on expired auctions
+-- (copper), expiredSinceSale = expired auctions after the last sale (the
+-- "failed posts in a row" for "Vendor it").
 function Ledger.SaleStats(d)
   local now = time()
   local idByName = {}
@@ -472,7 +475,7 @@ function Ledger.SaleStats(d)
   local items, n = {}, 0
   local function Get(id)
     local c = items[id]
-    if not c then c = { 0, 0, 0, 0, 0 }; items[id] = c; n = n + 1 end
+    if not c then c = { 0, 0, 0, 0, 0, 0, 0 }; items[id] = c; n = n + 1 end
     return c
   end
   -- The ledger covers the days since its oldest line (at most 30 count).
@@ -481,11 +484,13 @@ function Ledger.SaleStats(d)
     for _, l in ipairs(list) do if l.t and l.t < oldest then oldest = l.t end end
   end
   local days = math.min(30, math.max(1, math.ceil((now - oldest) / DAY)))
+  local lastSale = {}
   for _, l in ipairs(d.sold or {}) do
     local id = l.source == "AH" and (l.id or idByName[l.name or ""])
     if id then
       local c, qty = Get(id), (l.qty and l.qty > 0) and l.qty or 1
       c[1] = c[1] + 1
+      if (l.t or 0) > (lastSale[id] or 0) then lastSale[id] = l.t or 0 end
       if (l.t or 0) >= now - 30 * DAY then c[3] = c[3] + qty end
       if (l.money or 0) > 0 then c[4], c[5] = c[4] + qty, c[5] + l.money end
     end
@@ -494,7 +499,12 @@ function Ledger.SaleStats(d)
     if l.kind == "Expired" then
       local name = l.note and l.note:match("^%d+ x (.-) %(")
       local id = l.id or (name and idByName[name]) or (name and API.FindItemID(name))
-      if id then local c = Get(id); c[2] = c[2] + 1 end
+      if id then
+        local c = Get(id)
+        c[2] = c[2] + 1
+        if (l.money or 0) < 0 then c[6] = c[6] - l.money end
+        if (l.t or 0) > (lastSale[id] or 0) then c[7] = c[7] + 1 end
+      end
     end
   end
   return { t = now, days = days, items = items }, n

@@ -162,13 +162,17 @@ function ns.AddSettings()
   local function S() return ns.db.settings end
   API.RegisterSettings("crafting", { title = "Crafting", order = 40, settings = {
     { type = "number", label = "Shopping: % of the list price", min = 50, max = 500,
-      tooltip = "The Shopping tab buys auction reagents up to this share of the price the Crafting List counted with (/cmp prof max).",
+      tooltip = "The Shopping tab buys auction reagents up to this share of the price the Task List counted with (/cmp prof max).",
       get = function() return ns.CraftList.MaxPercent() end,
       set = function(v) S().shopMaxPercent = v; ns.CraftList.Refresh() end },
     { type = "toggle", label = "Open the Task List by itself",
       tooltip = "At the auction house, a mailbox, the bank or a merchant, when there is something to get there (/cmp prof tasks auto).",
       get = function() return S().shopAuto ~= false end,
       set = function(v) S().shopAuto = v end },
+    { type = "number", label = "Vendor flip: markup % (0 = off)", min = 0, max = 100,
+      tooltip = "At a merchant that gives you a reputation discount, the Task List lists items you can buy there and post on the auction house for at least this much over what you pay, after the cut and deposit.",
+      get = function() return ns.Merchant.FlipMarkup() end,
+      set = function(v) S().flipMarkup = v; if ns.TaskList then ns.TaskList.Refresh() end end },
   } })
   -- Added to the core's Item tooltips group.
   API.RegisterSettings("tooltip", { settings = {
@@ -176,6 +180,10 @@ function ns.AddSettings()
       tooltip = "What making the item costs, for items one of your characters can craft.",
       get = function() return S().tooltipCraftCost ~= false end,
       set = function(v) S().tooltipCraftCost = v end },
+    { type = "toggle", label = "Who should learn a recipe",
+      tooltip = "On recipe items (Pattern:, Recipe:, Plans: ...): which of your characters should learn it, and who knows it already.",
+      get = function() return S().tooltipRecipeRoute ~= false end,
+      set = function(v) S().tooltipRecipeRoute = v end },
   } })
 end
 

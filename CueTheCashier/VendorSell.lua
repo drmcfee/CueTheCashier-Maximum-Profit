@@ -102,11 +102,55 @@ local function SellPrice(id)
   return p and p > 0 and p or nil
 end
 
+-- ------------------------------------------------------------------
+-- "Vendor it" after too many reposts (0.46.0, Kim)
+-- What the auction house earns over a vendor, per item: the expected sale
+-- after the cut minus the vendor sell price. Every expired auction lost
+-- its deposit (about 20% of the vendor price per item). Once the deposits
+-- lost per item since the last sale reach that extra, selling to a vendor
+-- is better: the Post scan skips it with "Vendor it" and the Sell to Vendor
+-- button sells it (when its Vendoring operation has Sell to vendors on).
+-- The Vendoring operation can set its own limit: a number of failed posts,
+-- or deposits reaching a % of the vendor price.
+-- Default for the open question: deposits are counted per item (a deposit
+-- is per item times the stack, so stack size doesn't change the answer).
+-- Failed posts = auctions expired after your last sale of the item (from
+-- the ledger, on this server and faction).
+-- Returns vendorIt (bool), why (text), or nil when there is nothing to say.
+-- ------------------------------------------------------------------
+function V.RepostCheck(id)
+  local t = CueTheCashierDB.sales and CueTheCashierDB.sales[CM:GetAuctionKey()]
+  local c = t and t.items and t.items[id]
+  local failed = c and tonumber(c[7]) or 0
+  if failed <= 0 then return nil end
+  local vendor = SellPrice(id)
+  if not vendor then return nil end
+  local deposit = (CM.Fees and CM.Fees.Deposit(id, 1)) or 0
+  local paid = failed * deposit
+  local s
+  if CM.Operations then s = select(2, CM.Operations.ForItem(id, "vendor")) end
+  local limit = s and tonumber(s.repostLimit) or 0
+  local pct = s and tonumber(s.repostDepositPct) or 0
+  if limit > 0 then
+    return failed >= limit, ("%d failed posts (limit %d)"):format(failed, limit)
+  elseif pct > 0 then
+    return paid >= vendor * pct / 100, ("deposits lost %s, limit %d%% of vendor price"):format(API.FormatMoney(paid), pct)
+  end
+  local value = API.GetPrice(id, "auction.market") or API.GetPrice(id, "auction.min")
+  if not value then return nil end
+  local cut = (CM.Fees and CM.Fees.CutRate()) or 0.05
+  local extra = value * (1 - cut) - vendor
+  return paid >= extra, ("%d failed posts: deposits lost %s, auction house earns %s more than a vendor")
+    :format(failed, API.FormatMoney(paid), API.FormatMoney(math.max(0, math.floor(extra + 0.5))))
+end
+API.GetRepostAdvice = V.RepostCheck -- (itemID) -> vendorIt, why (API minor 14)
+
 -- Vendoring operation: how many of an item in your bags to sell.
 local function ByOperation(id, inBags)
   if not CM.Operations then return 0 end
   local name, s = CM.Operations.ForItem(id, "vendor")
   if not (name and s.sell) then return 0 end
+  if V.RepostCheck(id) then return math.max(0, inBags - (tonumber(s.keep) or 0)), "Vendor it" end
   local below = CM.Operations.Price("vendor", name, "sellBelow", id)
   local value = API.GetPrice(id, "auction.market") or API.GetPrice(id, "auction.min")
   -- Never seen on the auction house: no value to compare, keep it.
@@ -135,11 +179,12 @@ function V.Plan(withOps)
     if price then
       local e = c.items[id]
       local fromList = e and math.min(e.n, inBags) or 0
-      local fromOp = withOps and ByOperation(id, inBags) or 0
+      local fromOp, opWhy = 0, nil
+      if withOps then fromOp, opWhy = ByOperation(id, inBags) end
       local n = math.max(fromList, fromOp)
       if n > 0 then
         plan[#plan + 1] = { itemID = id, count = n, money = n * price,
-          why = fromList >= fromOp and "bought to vendor" or "Vendoring operation" }
+          why = fromList >= fromOp and "bought to vendor" or opWhy or "Vendoring operation" }
         total = total + n * price
       end
     end

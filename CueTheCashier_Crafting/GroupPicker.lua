@@ -1,7 +1,7 @@
 -- CueTheCashier Crafting: the Queue window (0.42.2, Kim).
 --
--- Opened by the Queue... button on the Crafting List. It lists your
--- groups with a tick box each; Queue fills the Crafting List with the
+-- Opened by the Queue... button on the Task List. It lists your
+-- groups with a tick box each; Queue fills the Task List with the
 -- profitable recipes (by each item's Crafting operation, as the Craft List
 -- button does) whose result is in a ticked group or one of its
 -- sub-groups. "Everything" ignores groups. Your ticks are remembered
@@ -117,7 +117,7 @@ local function Queue()
     end
   end
   local n = ns.CraftList.Build(nil, items)
-  CM.Print(("Crafting List: %d profitable recipes from %s."):format(n,
+  CM.Print(("Task List: %d profitable recipes queued from %s."):format(n,
     picked.all and "everything you know" or ("%d group(s)"):format(CountPicked())))
   window:Hide()
   ns.CraftList.Show()

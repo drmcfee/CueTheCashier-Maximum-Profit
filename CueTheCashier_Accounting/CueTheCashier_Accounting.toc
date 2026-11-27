@@ -3,7 +3,7 @@
 ## Notes: CueTheCashier's ledger: what you buy and sell on the auction house and at vendors, and your profit. Loaded when needed.
 ## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
 ## Author: Kim
-## Version: 0.45.0
+## Version: 0.46.0
 ## X-License: GPL-3.0-or-later
 ## Dependencies: CueTheCashier
 ## LoadOnDemand: 1

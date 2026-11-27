@@ -118,7 +118,14 @@ function R.Check()
       if opName and (tonumber(s.keepInStock) or 0) > 0 then
         local rid, res = R.MyRecipe(itemID)
         local e = { itemID = itemID, keep = s.keepInStock, have = ns.Inventory.Where(itemID).total, op = opName }
-        if not rid then
+        local who = ns.Crafters.WhoCrafts(itemID, s)
+        if who and not who.me then
+          e.why = "crafted by " .. who.name .. " (Crafting operation)"
+          if rid then
+            local n = R.FromOperation(itemID, res, opName, s)
+            if n > 0 then ns.CraftList.Elsewhere()[itemID] = { who = who.name, count = n, op = opName } end
+          end
+        elseif not rid then
           e.why = "this character knows no recipe for it (or a reagent has no price)"
         else
           local n, why = R.FromOperation(itemID, res, opName, s)
@@ -139,7 +146,7 @@ function R.Fill(queue)
     if e.ok then
       queue[e.recipeID] = (queue[e.recipeID] or 0) + e.crafts
       n = n + 1
-    elseif e.why ~= "enough in stock" then
+    elseif e.why ~= "enough in stock" and not e.why:find("^crafted by") then
       skipped = skipped + 1
     end
     CM.Debug(("Restock %s: keep %d, have %d: %s."):format(ns.Costs.ItemName(e.itemID), e.keep, e.have,

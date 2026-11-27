@@ -1,4 +1,4 @@
-# CueTheCashier: Maximum Profit 0.45.0 (auction house scanner and craft profit)
+# CueTheCashier: Maximum Profit 0.46.0 (auction house scanner and craft profit)
 
 The addon was called CraftMarket until 0.38.0. 0.40.0 renamed the folders and 0.41.0 everything inside
 (saved variables `CueTheCashierDB` and friends, the `CueTheCashier` Lua table, frame names). Data saved
@@ -113,7 +113,7 @@ recipes are read when you open it, so open every profession window once (on Fore
 Herbalism, Mining and Fishing have recipe windows too: Tanning, Gardening, Smelting, Bait and Tackle).
 The profit number is green for a profit, red for a loss and white for none.
 
-Crafting List: the **Craft List** button (left of Create All) offers **All profitable recipes** (every
+**0.46.0: one list.** The Crafting List window described in this paragraph is gone: its crafts, Queue... and Clear are on the Task List (see CHANGELOG.md 0.46.0 for crafters per operation, recipe routing, vendor flip and "Vendor it"). Crafting List (up to 0.45): the **Craft List** button (left of Create All) offers **All profitable recipes** (every
 profession of this character) or **Only <the open profession>**. The Crafting List window sits next to
 the profession window and opens and closes with it. It shows what to craft, grouped under profession titles
 (one of each; left-click a row for one more, right-click for one less) and the total profit. The **Add to list** button under a recipe's craft cost adds any recipe you know by hand (Shift for 5,

@@ -3,6 +3,34 @@
 All notable changes to CueTheCashier: Maximum Profit. Newest first.
 Versions below 1.0 are beta: saved data is kept between versions, but settings and commands can still change.
 
+## 0.46.0
+
+- **One list: the Crafting List window is gone.** Its crafts are the Task List's "Profession crafts", and the
+  Task List got its **Queue...** (click: from groups; right-click: all profitable, only this profession,
+  restock) and **Clear** buttons, plus a profit total. Shift-click a craft for one more, right-click for one
+  less. Your queued crafts carry over. The Task List opens with a profession window when crafts are queued.
+- **Crafting from the list takes two clicks** when the profession window is closed: the first opens it, the
+  second crafts. The game only starts a craft from a click made while its window is open (seen in game).
+  Chat and the row's tooltip say so.
+- **Crafter per Crafting operation.** A new "Crafter" field names the character who crafts the items. Other
+  characters show them under "Crafted by other characters" on the Task List instead of queuing them. If the
+  crafter doesn't know the recipe, the next character who does crafts it and the row says why.
+- **Who should learn a recipe.** Recipe items (Pattern:, Recipe:, Plans: ...) say on the tooltip which of
+  your characters should learn it and who knows it already. Settings > Item tooltips can turn it off.
+- **"Vendor item, AH cheaper"** on Task List auction rows when a vendor sells the reagent too but the auction
+  house is at least 5% cheaper; the tooltip shows both prices.
+- **Vendor flip.** At a merchant where you have a reputation discount (Honored or better), the Task List lists
+  items you can buy there and post on the auction house for a small, honest profit after the cut and deposit,
+  priced under the full vendor price and at or under the cheapest auction. Click buys one stack. Markup 8% by
+  default (Settings > Crafting, 0 = off); items with your sale rate under 25% are skipped.
+- **Vendor it after too many reposts.** When the deposits lost on expired auctions since your last sale reach
+  what the auction house earns over a vendor, the Post scan skips the item with "Vendor it" and the Sell to
+  Vendor button sells it (when its Vendoring operation has Sell to vendors on). Vendoring operations can set
+  their own limit: failed posts, or deposits as a % of the vendor price.
+- Saved data: nothing moves. The ledger's sale numbers gain two fields (deposits lost, expired since last
+  sale), rebuilt the next time you open a mailbox. New operation fields have empty/0 defaults. API minor 14
+  (`API.GetRepostAdvice`).
+
 ## 0.45.0
 
 - **Shopping List is now the Task List.** It holds more than things to buy, so the window, menus, minimap

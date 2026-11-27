@@ -111,6 +111,15 @@ local function OpPrice(r, key) return API.GetOperationPrice("post", r.op, key, r
 -- Works out the post price and quantity of a post row.
 local function DecidePost(r)
   local s = r.settings
+  -- 0.46.0 (Kim): expired so often that the deposits lost have eaten what
+  -- the auction house earns over a vendor: sell it to a vendor instead.
+  if API.GetRepostAdvice then
+    local vendorIt, why = API.GetRepostAdvice(r.itemID)
+    if vendorIt then
+      r.action, r.note = "skip", "Vendor it: " .. tostring(why)
+      return
+    end
+  end
   local minP, normal, maxP = OpPrice(r, "minPrice"), OpPrice(r, "normalPrice"), OpPrice(r, "maxPrice")
   local undercut = OpPrice(r, "undercut") or 0
   if not (minP and normal and maxP) then

@@ -60,7 +60,10 @@ O.FIELDS = {
     { key = "keepInStock", type = "number", label = "Keep in stock", default = 0, min = 0, max = 100000,
       tooltip = "Craft until you have this many (bags, bank, mail, auctions). 0 = don't restock." },
     { key = "maxCraft", type = "number", label = "Most to craft at once", default = 5, min = 1, max = 1000,
-      tooltip = "How many crafts the Crafting List queues for this item." },
+      tooltip = "How many crafts the Task List queues for this item." },
+    -- 0.46.0 (Kim): which character crafts these items.
+    { key = "crafter", type = "text", label = "Crafter (empty = any)", default = "",
+      tooltip = "The character who crafts these items (first name is enough). Your other characters see these crafts under \"Crafted by other characters\" on the Task List. If the crafter doesn't know the recipe, the next character who does crafts it." },
   },
   mail = {
     { key = "target", type = "text", label = "Send to character", default = "",
@@ -73,6 +76,11 @@ O.FIELDS = {
     { key = "sellBelow", type = "price", label = "When auction value is under", default = "vendor * 120%",
       tooltip = "Sell to a vendor when the item is worth less than this on the auction house." },
     { key = "keep", type = "number", label = "Keep in bags", default = 0, min = 0, max = 100000 },
+    -- 0.46.0 (Kim): vendor it after too many reposts. 0 = the automatic rule.
+    { key = "repostLimit", type = "number", label = "Vendor after failed posts (0 = auto)", default = 0, min = 0, max = 1000,
+      tooltip = "Say \"Vendor it\" once this many auctions in a row have expired without a sale. 0 = automatic: when the deposits lost reach what the auction house earns over the vendor price." },
+    { key = "repostDepositPct", type = "number", label = "Or deposits lost reach % of vendor price (0 = auto)", default = 0, min = 0, max = 10000,
+      tooltip = "Say \"Vendor it\" once the deposits lost on one item reach this share of its vendor price. Used when failed posts above is 0." },
   },
   bank = {
     { key = "keepInBags", type = "number", label = "Keep in bags", default = 0, min = 0, max = 100000,

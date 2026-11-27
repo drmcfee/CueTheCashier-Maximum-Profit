@@ -1,11 +1,13 @@
 -- CueTheCashier Crafting: the Task List (called the Shopping List before
 -- 0.45.0; it now holds more than things to buy).
 --
--- Profession crafts  the crafts on the Crafting List (0.45.0). Click: opens
---                    the right profession and starts the craft, only when
---                    every reagent is in your bags; otherwise it says what
---                    is missing and opens nothing.
--- Then where to get every reagent the Crafting List still needs:
+-- Profession crafts  what to craft (0.45.0; the Crafting List window is part
+--                    of this since 0.46.0). Click: opens the right
+--                    profession; with it open, a click crafts (the game
+--                    needs that second click). Only when every reagent is
+--                    in your bags; otherwise it says what is missing.
+--                    Shift-click one more, right-click one less.
+-- Then where to get every reagent the crafts still need:
 --   Auction House  to buy there (click: Shopping tab, buy box)
 --   Vendor         to buy from a merchant (click at a merchant: buy it)
 --   Mailbox        already yours, waiting in the mail, including what you
@@ -14,9 +16,9 @@
 --   Alts           on your other characters on this server and faction
 -- What is in your bags already is not listed. The window opens by itself
 -- at the auction house, a mailbox, the bank or a merchant when it has
--- something for that place; the Crafting List's Task List button (right-
--- click Queue...), the minimap button (right-click) or /cmp prof tasks
--- opens it any time. Saved settings keep their old names (shopPos,
+-- something for that place, and with a profession window when crafts are
+-- queued; the Craft List button's menu, the minimap button (right-click)
+-- or /cmp prof tasks opens it any time. Saved settings keep their old names (shopPos,
 -- shopAuto) so nothing is lost.
 -- Copyright (C) 2026 Kim. Licensed under the GNU GPL v3 or later; see LICENSE.
 local _, ns = ...
@@ -39,6 +41,12 @@ local function Build()
   -- Opens where you last dragged it (0.42.0).
   f:LoadPosition(ns.db.settings, "shopPos")
   f.OnMoved = function(self) self:SavePosition(ns.db.settings, "shopPos") end
+  -- The Crafting List's buttons (0.46.0, Kim: one list).
+  f:AddButton("Clear", 60, function() ns.CraftList.Clear() end, "Takes every craft off the list.")
+  local queue = f:AddButton("Queue...", 90, function(self, button)
+    if button == "RightButton" then ns.CraftList.QueueMenu(self) else ns.GroupPicker.Show() end
+  end, "Click: pick groups and queue their profitable recipes.\nRight-click: all profitable recipes, only the open profession, or restock items.")
+  queue:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   return f
 end
 
@@ -70,11 +78,13 @@ end
 
 local RED, GREEN = "|cffff4040", "|cff40ff40"
 
--- Profession crafts (0.45.0): one row per craft on the Crafting List, in
+-- Profession crafts (0.45.0): one row per queued craft, in
 -- the list's own order (rows keep their spots, Kim's rule).
 local function CraftLines(lines, Header, crafts)
   if #crafts == 0 then return end
-  Header("Profession crafts")
+  local profit = 0
+  for _, c in ipairs(crafts) do if not c.forReagent then profit = profit + (c.profit or 0) end end
+  Header("Profession crafts", ns.ProfitText(profit))
   local profs = ns.Char().profs
   for _, c in ipairs(crafts) do
     local missing, can = ns.CraftList.BagCheck(c.id, 1)
@@ -91,14 +101,33 @@ local function CraftLines(lines, Header, crafts)
       end
     else
       right = GREEN .. "craft|r"
-      tip = { ("Click: opens %s and crafts %d."):format(prof and prof.name or "the profession", math.min(c.count, can)) }
+      local pname = prof and prof.name or "the profession"
+      if c.skill and c.skill == ns.Professions.OpenProfession() then
+        tip = { ("Click: crafts %d."):format(math.min(c.count, can)) }
+      else
+        tip = { ("Click: opens %s. Click again to craft %d (the game needs a second click)."):format(pname, math.min(c.count, can)) }
+      end
       if can < c.count then tip[#tip + 1] = ("Your bags have reagents for %d of %d."):format(can, c.count) end
     end
-    if c.forReagent then table.insert(tip, 1, "A reagent for another craft on the list: make it first.") end
+    if c.forReagent then
+      table.insert(tip, 1, "A reagent for another craft on the list: make it first.")
+    elseif c.profit then
+      table.insert(tip, 1, { "Profit", ns.ProfitText(c.profit) })
+    end
+    tip[#tip + 1] = "Shift-click: one more. Right-click: one less."
+    local id = c.id
     lines[#lines + 1] = {
       left = ("%d x %s%s"):format(c.count, c.name, prof and (GRAY .. " (" .. prof.name .. ")|r") or ""),
       right = right, tip = tip,
-      onClick = function(button) if button == "LeftButton" then ns.CraftList.CraftFromTask(c) end end }
+      onClick = function(button)
+        if button == "RightButton" then
+          ns.CraftList.ChangeCount(id, -1)
+        elseif IsShiftKeyDown and IsShiftKeyDown() then
+          ns.CraftList.ChangeCount(id, 1)
+        else
+          ns.CraftList.CraftFromTask(c)
+        end
+      end }
   end
 end
 
@@ -109,12 +138,50 @@ local function Lines(sec, crafts)
     lines[#lines + 1] = { header = text, right = right }
   end
   CraftLines(lines, Header, crafts or {})
+  -- Crafts a Crafting operation gives to another character (0.46.0).
+  local others = {}
+  for itemID, x in pairs(ns.CraftList.Elsewhere()) do others[#others + 1] = { id = itemID, x = x } end
+  table.sort(others, function(a, b)
+    if a.x.who ~= b.x.who then return a.x.who < b.x.who end
+    return Name(a.id) < Name(b.id)
+  end)
+  if #others > 0 then
+    Header("Crafted by other characters")
+    for _, o in ipairs(others) do
+      local tip = { ("Log in on %s to craft it: the Crafting operation \"%s\" names them."):format(o.x.who, tostring(o.x.op)) }
+      if o.x.note then tip[#tip + 1] = o.x.note end
+      lines[#lines + 1] = { left = ("%s: %d x %s"):format(o.x.who, o.x.count, Name(o.id)), itemID = o.id, tip = tip }
+    end
+  end
+  -- Vendor flip at this merchant (0.46.0).
+  local flips = ns.Merchant.Flips and ns.Merchant.Flips() or {}
+  if #flips > 0 then
+    Header(("Vendor flip (%d%% discount)"):format(math.floor(flips[1].discount * 100 + 0.5)))
+    for _, f in ipairs(flips) do
+      lines[#lines + 1] = { left = Name(f.itemID), right = ns.ProfitText(f.profit), itemID = f.itemID,
+        tip = { { "You pay", Money(f.paid) }, { "Post at", Money(f.post) },
+          { "Profit each", Money(f.profit) }, { ("Profit per stack of %d"):format(f.stack), Money(f.profit * f.stack) },
+          "After the auction house cut and deposit. A small profit on purpose: the post price stays under the full vendor price and at or under the cheapest auction now.",
+          "Click: buy one stack." },
+        onClick = function(button) if button == "LeftButton" then ns.Merchant.BuyFlip(f) end end }
+    end
+  end
   if #sec.auction > 0 then
     Header("Auction House", Money(sec.costAH))
     for _, e in ipairs(sec.auction) do
-      lines[#lines + 1] = { left = ("%d x %s"):format(e.buy, Name(e.id)), right = Money(e.cost), itemID = e.id,
-        tip = { { "To buy", e.buy }, { "Price each", Money(e.each) },
-          "Click with the auction house open: the Shopping tab looks it up and asks to buy it." },
+      -- "Vendor item, AH cheaper" (0.46.0): a vendor sells it too, but the
+      -- auction house is cheaper now. Hidden when the saving is under 5%.
+      local vendor = API.GetVendorBuyPrice and API.GetVendorBuyPrice(e.id)
+      local cheaper = vendor and e.each and e.each < vendor * 0.95
+      local tip = { { "To buy", e.buy }, { "Price each", Money(e.each) } }
+      if cheaper then
+        tip[#tip + 1] = { "Vendor price", Money(vendor) }
+        tip[#tip + 1] = "A vendor sells it too, but the auction house is cheaper right now."
+      end
+      tip[#tip + 1] = "Click with the auction house open: the Shopping tab looks it up and asks to buy it."
+      lines[#lines + 1] = { left = ("%d x %s%s"):format(e.buy, Name(e.id), cheaper and (GRAY .. " (vendor item, AH cheaper)|r") or ""),
+        right = Money(e.cost), itemID = e.id,
+        tip = tip,
         onClick = function(button) if button == "LeftButton" then ns.CraftList.BuyReagent(e) end end }
     end
   end
@@ -174,7 +241,7 @@ local function Lines(sec, crafts)
     end
   end
   if #lines == 0 then
-    lines[1] = { left = GRAY .. "Nothing to do: the Crafting List is empty.|r" }
+    lines[1] = { left = GRAY .. "Nothing to do. Queue... (or the Craft List button in a profession window) adds crafts.|r" }
   end
   return lines
 end
@@ -184,7 +251,8 @@ function SL.Refresh(summary)
   summary = summary or ns.CraftList.Summary()
   local sec = SL.Sections(summary)
   window:SetLines(Lines(sec, summary.crafts))
-  window.totals:SetText(("To buy: %s"):format(Money(sec.costAH + sec.costVendor)))
+  window.totals:SetText(("Profit: %s     To buy: %s"):format(ns.ProfitText(summary.profit or 0),
+    Money(sec.costAH + sec.costVendor)))
 end
 
 function SL.Show()

@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <b>Public beta</b> · version 0.45.0 · GPL-3.0 · <code>/cmp</code>
+  <b>Public beta</b> · version 0.46.0 · GPL-3.0 · <code>/cmp</code>
 </p>
 
 ---
@@ -30,7 +30,7 @@ windows, and you can give it your own look with a skin.
 - **Craft profit for every profession.** Your professions are found by themselves, including gathering
   and secondary skills (on Forever, Skinning, Herbalism, Mining and Fishing have recipe windows too).
   Each recipe shows its cost, what it sells for and the profit, right in the game's profession window.
-- **Crafting List and Task List.** Queue up profitable crafts in one click. The Task List tells
+- **One Task List.** Queue up profitable crafts in one click. The Task List tells
   you what to buy and where (auction house, vendor, mailbox, bank or one of your alts), and starts each
   craft in one click once the reagents are in your bags.
 - **Groups and operations.** Sort items into groups and give each group rules for posting, buying,
@@ -57,7 +57,7 @@ windows, and you can give it your own look with a skin.
    |---|---|
    | `CueTheCashier` | The core: prices, tooltip, main window, settings, `/cmp`. Needed by all the others. |
    | `CueTheCashier_Auctioning` | Auction house scanning, buying, posting and the deal tabs. |
-   | `CueTheCashier_Crafting` | Professions, craft profit, Crafting List and Task List. |
+   | `CueTheCashier_Crafting` | Professions, craft profit and the Task List. |
    | `CueTheCashier_Accounting` | The ledger, gold history and your own sale numbers. |
    | `CueTheCashier_Destroying` | The Destroy list and disenchant records. |
    | `CueTheCashier_History` | 30 days of daily prices (data only). |
@@ -105,33 +105,45 @@ button switches back. Its tabs:
 - **Vendor**: items on the auction house priced below what a vendor pays for them.
 - **Snipe**: watches for new postings priced well under market value (60% by default) or under vendor price.
 - **Disenchant**: gear selling below what it disenchants into.
-- **Shopping**: buys what your Crafting List still needs, up to 120% of the price it planned for.
+- **Shopping**: buys what your Task List still needs, up to 120% of the price it planned for.
   **Group Scan** looks up everything in your groups that has a Shopping operation.
 
 **Every purchase asks first.** WoW Forever doesn't let addons buy from a plain button click, only from a
 confirm box. This isn't something an addon can change. Posting doesn't need a confirm box.
 
-### Professions, Crafting List and Task List
+### Professions and the Task List
 
 CMP keeps the game's profession window and adds to it. Under the selected recipe you get **Craft cost**,
 **Sells for** (after the auction house cut) and **Profit**; hover them to see each reagent's price and
 where it comes from. Reagents are priced at the cheapest of the auction house, a vendor, or crafting
 them yourself with a recipe any of your characters knows.
 
-- **Craft List** button (next to Create All): adds all profitable recipes, only this profession's, your
-  restock rules, or everything from chosen groups. The **Queue...** button on the Crafting List does the
-  last one too.
-- **Crafting List**: left-click a row for one more, right-click for one less. **Craft** makes the next
-  recipe the open window can make. Reagents worth crafting yourself are added and made first.
-- **Task List** (called Shopping List before 0.45.0): first **Profession crafts**, the crafts on the
-  list; click one to open its profession and start it, only when every reagent is in your bags (otherwise
-  it tells you what is missing). Then what the list needs that you don't have, sorted by where to get it. It pops up at
+- **Craft List** button (next to Create All): queues all profitable recipes, only this profession's, your
+  restock rules, or everything from chosen groups. The Task List's **Queue...** button does the same
+  (click: from groups; right-click: the other choices). **Clear** empties the list.
+- **Task List** (one list since 0.46.0; it was the Shopping List and the Crafting List): first
+  **Profession crafts**. Click one to open its profession, then click it again to craft (the game needs
+  that second click). It only crafts when every reagent is in your bags, otherwise it tells you what is
+  missing. Shift-click: one more, right-click: one less. Reagents worth crafting yourself are added and
+  made first. Then **Crafted by other characters** (see Crafter below), a **Vendor flip** list at a
+  merchant where you have a reputation discount, and what the list needs that you don't have, sorted by
+  where to get it. An auction house reagent that a vendor also sells says "vendor item, AH cheaper"
+  when the auction house is at least 5% cheaper. It pops up at
   the auction house, a merchant, the mailbox or the bank when there is something for you there. At a
   merchant, **Buy Reagents** buys exactly what's missing. Clicking a vendor row puts a map pin on the
   nearest vendor you have visited that sells it.
 - **Restock**: under a recipe, set **Keep in stock** and **Min profit** to keep that many on hand
   across all your characters.
 - **Craft timer**: when you craft several, the cast bar shows time so far and time for the whole batch.
+- **Crafter** (Crafting operation): name the character who crafts those items. Your other characters
+  list them under "Crafted by other characters" instead of queuing them. If the crafter doesn't know the
+  recipe, the next character who does takes over and the row says so.
+- **Who should learn a recipe**: a recipe item's tooltip says which character should learn it (your
+  main for that profession, the one with the highest skill, or another one when the main knows it) and
+  who knows it already. Open each profession once per character so CMP knows their recipes.
+- **Vendor it**: when an item has expired so often that the lost deposits ate what the auction house
+  earns over a vendor, the Post scan skips it with "Vendor it", and the Sell to Vendor button sells it
+  (with Sell to vendors on in its Vendoring operation). The Vendoring operation can set its own limit.
 
 ### Groups
 
@@ -226,14 +238,13 @@ you through it and lists every field; `CueTheCashier/SkinDark.lua` is a full exa
 | `/cmp fullscan` | Full auction house scan (auction house must be open) |
 | `/cmp ledger` | Open the ledger |
 | `/cmp prof` | Professions report (written to the log) |
-| `/cmp prof list` | Open the Crafting List |
+| `/cmp prof list` | Open the Task List |
 | `/cmp prof queue` | Queue crafts from chosen groups |
 | `/cmp prof tasks` | Open the Task List (`auto` turns pop-ups on or off; `/cmp prof shop` still works) |
 | `/cmp prof top` | Your most profitable known recipes |
 | `/cmp prof restock` | Show what your restock rules would do |
 | `/cmp prof max <percent>` | Highest price to pay for reagents, as % of planned (default 120) |
 | `/cmp prof buy` | Buy missing reagents at the open merchant |
-| `/cmp prof dock` | Put the Crafting List back next to the profession window |
 | `/cmp prof vendors` | Vendors you have visited |
 | `/cmp macro [wheel\|next]` | Make the one-key macro, or see its next step |
 | `/cmp destroy` | Open the Destroy list |
@@ -256,17 +267,18 @@ to hear whether it works for you, even if the answer is just "fine". Step-by-ste
 
 | Feature | Since | What to check |
 |---|---|---|
+| [One Task List, crafters, recipes, flips](CueTheCashier/TESTING.md#one-task-list-crafters-recipes-flips-0460) | 0.46.0 | Crafter per Crafting operation, "Learn on" for recipe items, vendor flip at a merchant with a discount, "Vendor it" after too many expired auctions. |
 | [Task List and Profession crafts](CueTheCashier/TESTING.md#task-list-and-low-data-0450) | 0.45.0 | Click a craft on the Task List: does it open the right profession and start crafting? With a reagent missing, it should only tell you what's missing. |
 | [Low data mark](CueTheCashier/TESTING.md#task-list-and-low-data-0450) | 0.45.0 | Sale rate lines from only a few auctions say "(low data)". |
 | [Shared commodity prices](CueTheCashier/TESTING.md#shared-commodity-prices-0440) | 0.44.0 | Do stackable items really share one auction house across server types? Scan the same item (say Light Leather) on two server types a few minutes apart and compare with `/cmp region`. |
 | [Sale rate and region numbers](CueTheCashier/TESTING.md#sale-rate-and-region-0430) | 0.43.0 | Do sale rate, sold per day and average sale look right next to what you remember selling? |
 | [Base operations and craft queue](CueTheCashier/TESTING.md#defaults-lists-and-craft-queue-0420) | 0.42.0 | The "Not enough on the auction house?" box, the craft timer, the Crafting List remembering its place. |
-| [Queue from groups](CueTheCashier/TESTING.md#queue-from-groups-0422) | 0.42.2 | The **Queue...** button on the Crafting List. |
+| [Queue from groups](CueTheCashier/TESTING.md#queue-from-groups-0422) | 0.42.2 | The **Queue...** button on the Task List. |
 | [Send Mail arrow](CueTheCashier/TESTING.md#send-mail-arrow-0423) | 0.42.3 | The menu next to the To: box, and mail to two-part names (first name and surname). |
 | [Disenchanting](CueTheCashier/TESTING.md#destroying-cuethecashier_destroying) | 0.12.0 | Forever may disenchant differently from the classic table. Disenchant a few items, then run `/cmp dis`. |
 | Neutral auction houses | 0.34.0 | The cut at Booty Bay, Gadgetzan and Everlook is assumed to be 15%. Is it? |
 | PvP, Roleplay and Hardcore servers | 0.37.0 | Does `/cmp realm` name your server type correctly? Most testing so far was on EU Normal, Alliance. |
-| Other addons | 0.40.0 | Do our buttons and the Crafting List find a free spot next to your UI addons (ElvUI, profession addons...)? |
+| Other addons | 0.40.0 | Do our buttons find a free spot next to your UI addons (ElvUI, profession addons...)? |
 
 Also very welcome: US region players, Horde players, and anyone with several characters and professions.
 
@@ -301,7 +313,7 @@ WoW Forever blocks addons from buying with a single click. A confirm box is the 
 Run a full scan at the auction house first. Prices are saved per server type and faction.
 
 **I don't see the Craft List button.**
-Another addon may be covering it. Use the **Queue...** button on the Crafting List or `/cmp prof queue`,
+Another addon may be covering it. Use the **Queue...** button on the Task List or `/cmp prof queue`,
 and tell us which addon it was.
 
 **Does it work on Classic, Season of Discovery or Retail?**

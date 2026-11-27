@@ -4,8 +4,42 @@ One list per module. Run a module's list when it is new or changed, tick each li
 anything odd together with the debug log: `/cmp debug` first, then `/cmp log`, Pause, Select All,
 Ctrl+C. Chat can't be copied, the log can.
 
-Before every list: install all six folders, log in, `/cmp status` shows version 0.45.0 and every
+Before every list: install all six folders, log in, `/cmp status` shows version 0.46.0 and every
 module, and there is no Lua error box.
+
+## One Task List, crafters, recipes, flips (0.46.0)
+
+One list
+- [ ] Open a profession window with crafts queued: no Crafting List window; the Task List opens instead.
+- [ ] Task List buttons: **Queue...** (click: groups window; right-click: All profitable, Only <profession>,
+      Restock items, From groups) and **Clear** (empties Profession crafts). Profit total at the bottom.
+- [ ] Shift-click a craft row: one more. Right-click: one less. The list doesn't jump.
+- [ ] Profession closed, click a green **craft** row: the profession opens and chat says to click again. Click
+      again: it crafts.
+- [ ] "Add to Task List" under a recipe in the profession window still adds it.
+
+Crafter per Crafting operation
+- [ ] Operations tab > a Crafting operation: set **Crafter** to another character's first name. Queue on this
+      character: those items are not queued; **Crafted by other characters** lists "Name: 3 x Item".
+- [ ] Log in on that character, queue: they are queued there.
+- [ ] Crafter set to someone who doesn't know the recipe: the next character who does is used (hover the row).
+
+Who should learn a recipe (needs each character to have opened its profession windows once)
+- [ ] Hover a recipe item (Pattern:/Recipe:/Plans:): "Learn on <name> (your main ...)" and "Known by ...".
+- [ ] One the main already knows: names another character with that profession.
+- [ ] A recipe for a profession nobody has: "None of your characters has this profession: sell it".
+- [ ] A recipe never seen in a profession window: grey "open the profession window once".
+
+AH cheaper and vendor flip
+- [ ] A reagent a vendor sells but the AH has 5% or more cheaper: its Auction House row says "(vendor item, AH cheaper)".
+- [ ] At a merchant where you are Honored or better: the Task List shows **Vendor flip (10% discount)** with
+      items that pay after cut and deposit. Hover: you pay, post at, profit each and per stack. Click: buys one stack.
+- [ ] Settings > Crafting > "Vendor flip: markup %" at 0: the section is gone.
+
+Vendor it after too many reposts
+- [ ] Post a cheap item a few times and let it expire, open the mailbox, then Post scan: "Vendor it: N failed posts ...".
+- [ ] With Sell to vendors on in its Vendoring operation, the merchant's Sell to Vendor button sells it.
+- [ ] Vendoring operation "Vendor after failed posts" = 2: says Vendor it after 2 expired auctions in a row.
 
 ## Task List and low data (0.45.0)
 
@@ -17,8 +51,7 @@ Task List (was Shopping List)
 - [ ] Queue a few crafts. The first section is **Profession crafts**: one row per craft, "2 x Name (Profession)",
       in the same order as the Crafting List. Clicking rows doesn't move the list.
 - [ ] A craft with every reagent in your bags says **craft** (green). Close the profession window, click the
-      row: the right profession opens and the craft starts. If it opens but doesn't craft, chat says to click
-      again; click the row again (the window is open now) and it crafts. Send the log either way.
+      row: the right profession opens; click it again and it crafts (0.46.0: two clicks, the game's rule).
 - [ ] Gathering profs too: queue a Tanning (Skinning) recipe, close everything, click its row.
 - [ ] Bank a reagent: the row turns **missing** (red), its tooltip lists what is missing (have / need). Click it:
       nothing opens, chat says what is missing.

@@ -3,7 +3,7 @@
 ## Notes: CueTheCashier's destroying module: the Destroy list (/cmp destroy) and a record of your disenchants compared with the disenchant table (/cmp dis).
 ## IconTexture: Interface\AddOns\CueTheCashier\Media\icon
 ## Author: Kim
-## Version: 0.45.0
+## Version: 0.46.0
 ## X-License: GPL-3.0-or-later
 ## Dependencies: CueTheCashier
 ## SavedVariables: CueTheCashierDestroyingDB, CraftMarketDestroyingDB
