@@ -73,7 +73,7 @@ windows, and you can give it your own look with a skin.
 6. Log in and type `/cmp status`. It shows the version and which modules are loaded.
 
 To update, close the game, delete the six old folders and copy in the new ones. Your data is kept: it
-lives in `WTF\Account\<account>\SavedVariables\CueTheCashier*.lua`, not in the AddOns folder.
+lives in `WTF\Account\[account]\SavedVariables\CueTheCashier*.lua`, not in the AddOns folder.
 
 You can turn a module off in the AddOns list if you don't want that feature. Only the core is required.
 
@@ -206,7 +206,7 @@ Type `/cmp macro` to make a macro called "CueTheCashier", then drag it to an act
 key. Each press does the next useful step: accepts a CMP confirm box, posts or cancels the next line on
 the Post tab, buys the selected deal, or disenchants the top item on the Destroy list. You can also set a
 modifier key plus the scroll wheel to press it (Settings > Auction house > One-key scroll wheel).
-`/cmp macro next` tells you what the next press will do.
+`/cmp macro next` tells you what the next press will do.shopping
 
 `/cmp destroy` opens the **Destroy list**: gear in your bags worth disenchanting, best first.
 
@@ -306,7 +306,7 @@ to that one instead.
 
 ## FAQ
 
-**Why does every purchase ask for confirmation?**
+**Why does every purchase ask for confirmation?**shopping
 WoW Forever blocks addons from buying with a single click. A confirm box is the only way that works.
 
 **My prices are empty after I installed.**
@@ -324,7 +324,7 @@ Not yet. Everything comes from your own scans and mail. A desktop companion app 
 
 ## For addon makers
 
-CMP has a public API (`CueTheCashier.API`) for price sources, groups, the shopping list and more, and
+CMP has a public API (`CueTheCashier.API`) for price sources, groups, the task list and more, and
 you can write your own modules. See the API section in
 [`CueTheCashier/README.md`](CueTheCashier/README.md#for-addon-makers-the-api) and `CueTheCashier/API.lua`.
 
